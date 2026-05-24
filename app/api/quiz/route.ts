@@ -4,13 +4,10 @@ import { PrismaClient } from "@prisma/client";
 // Lazy Graceful Prisma Client instantiation
 function getPrismaClient() {
   try {
-    return new PrismaClient({
-      datasources: {
-        db: {
-          url: process.env.DATABASE_URL || "mysql://root:password@localhost:3306/crypthunt"
-        }
-      }
-    } as any);
+    if (!process.env.DATABASE_URL) {
+      process.env.DATABASE_URL = "mysql://root:password@localhost:3306/crypthunt";
+    }
+    return new PrismaClient();
   } catch (e) {
     console.error("Prisma Client initialization failed", e);
     return null;
