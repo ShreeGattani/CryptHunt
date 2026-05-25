@@ -67,3 +67,42 @@ export async function GET(request: Request) {
     });
   }
 }
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const { email, elapsedTime } = body;
+
+    if (!email || elapsedTime === undefined) {
+      return NextResponse.json(
+        { success: false, message: "Missing required sync parameters: email or elapsedTime." },
+        { status: 400 }
+      );
+    }
+
+    const prisma = getPrismaClient();
+    if (!prisma) {
+      return NextResponse.json({
+        success: true,
+        databaseStatus: "OFFLINE_FALLBACK",
+      });
+    }
+
+    await prisma.user.update({
+      where: { email: email.toLowerCase() },
+      data: { elapsedTime: parseInt(elapsedTime, 10) },
+    });
+
+    return NextResponse.json({
+      success: true,
+      databaseStatus: "CONNECTED",
+      message: "Elapsed time synchronized successfully."
+    });
+  } catch (error: any) {
+    console.error("Database sync post error:", error);
+    return NextResponse.json({
+      success: true,
+      databaseStatus: "OFFLINE_FALLBACK",
+    });
+  }
+}

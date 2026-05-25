@@ -167,10 +167,19 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }));
           }
         }
+
+        // Push local ticking time to database to keep all browser sessions perfectly aligned
+        if (state.isLoggedIn && !state.completedAt && document.visibilityState === "visible") {
+          await fetch("/api/auth/sync", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: state.email, elapsedTime: state.elapsedTime }),
+          });
+        }
       } catch (e) {
         console.warn("Background session sync skipped due to connection speed", e);
       }
-    }, 10000); // Poll every 10 seconds for real-time multi-browser response!
+    }, 10000); // Poll and push every 10 seconds for real-time multi-browser response!
 
     return () => clearInterval(syncInterval);
   }, [state.isLoggedIn, state.email, state.currentLevel, state.currentQuestion, state.score, state.elapsedTime, isInitialized]);
