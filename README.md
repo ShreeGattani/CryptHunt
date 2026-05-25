@@ -48,7 +48,7 @@ Crypthunt/
 │   ├── api/
 │   │   ├── auth/
 │   │   │   ├── login/
-│   │   │   │   └── route.ts         # User authentication verification & session generator
+│   │   │   │   └── route.ts         # User authentication validation & session generator
 │   │   │   ├── register/
 │   │   │   │   └── route.ts         # User registration duplicate validator
 │   │   │   └── sync/
