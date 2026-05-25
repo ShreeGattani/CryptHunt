@@ -158,7 +158,7 @@ export default function LeaderboardPage() {
     }, 10 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [state.isLoggedIn, state.username, state.email, state.score, state.currentLevel, state.elapsedTime]);
+  }, [state.isLoggedIn, state.username, state.email, state.score, state.currentLevel]);
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-950 text-zinc-100 font-mono relative pb-12">
