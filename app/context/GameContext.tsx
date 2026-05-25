@@ -132,6 +132,49 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [state.isLoggedIn, state.completedAt]);
 
+  // Real-time multi-browser/multi-session score & progress synchronization
+  useEffect(() => {
+    if (!state.isLoggedIn || !isInitialized) return;
+
+    const syncInterval = setInterval(async () => {
+      try {
+        const response = await fetch(`/api/auth/sync?email=${encodeURIComponent(state.email)}`);
+        const json = await response.json();
+        
+        if (response.ok && json.success && json.databaseStatus === "CONNECTED" && json.data) {
+          const db = json.data;
+          
+          // Check if database progress is further along or different than local state
+          const hasFurtherProgress = 
+            db.currentLevel > state.currentLevel ||
+            (db.currentLevel === state.currentLevel && db.currentQuestion > state.currentQuestion) ||
+            db.score > state.score ||
+            db.completedAt !== state.completedAt;
+
+          // Check if elapsed time has fallen out of sync by more than 5 seconds
+          const outOfSyncTime = Math.abs(db.elapsedTime - state.elapsedTime) > 5;
+
+          if (hasFurtherProgress || outOfSyncTime) {
+            setState((prev) => ({
+              ...prev,
+              score: Math.max(prev.score, db.score),
+              currentLevel: Math.max(prev.currentLevel, db.currentLevel),
+              currentQuestion: db.currentLevel > prev.currentLevel 
+                ? db.currentQuestion 
+                : (db.currentLevel === prev.currentLevel ? Math.max(prev.currentQuestion, db.currentQuestion) : prev.currentQuestion),
+              elapsedTime: db.elapsedTime,
+              completedAt: db.completedAt || prev.completedAt,
+            }));
+          }
+        }
+      } catch (e) {
+        console.warn("Background session sync skipped due to connection speed", e);
+      }
+    }, 10000); // Poll every 10 seconds for real-time multi-browser response!
+
+    return () => clearInterval(syncInterval);
+  }, [state.isLoggedIn, state.email, state.currentLevel, state.currentQuestion, state.score, state.elapsedTime, isInitialized]);
+
   // Security gate redirects
   useEffect(() => {
     if (!isInitialized) return; // Wait until session recovery check is done!

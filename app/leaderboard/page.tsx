@@ -56,99 +56,108 @@ export default function LeaderboardPage() {
   const { state, formatTime } = useGame();
   const [boardData, setBoardData] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
-  useEffect(() => {
-    async function fetchLeaderboard() {
-      setIsLoading(true);
-      let entries: LeaderboardEntry[] = [];
-      let usingDb = false;
+  const fetchLeaderboard = async (showLoading = false) => {
+    if (showLoading) setIsLoading(true);
+    let entries: LeaderboardEntry[] = [];
+    let usingDb = false;
 
-      try {
-        const res = await fetch("/api/quiz");
-        const json = await res.json();
-        
-        if (res.ok && json.success && json.databaseStatus === "CONNECTED") {
-          entries = json.data || [];
-          usingDb = true;
-        }
-      } catch (e) {
-        console.warn("Failed fetching production leaderboard, using local fallbacks", e);
+    try {
+      const res = await fetch("/api/quiz");
+      const json = await res.json();
+      
+      if (res.ok && json.success && json.databaseStatus === "CONNECTED") {
+        entries = json.data || [];
+        usingDb = true;
       }
-
-      // If database is offline or returned fallback status, use local localStorage database
-      if (!usingDb) {
-        try {
-          const localUsersRaw = localStorage.getItem("crypthunt_local_users");
-          if (localUsersRaw) {
-            const localUsers = JSON.parse(localUsersRaw);
-            entries = localUsers.map((u: any) => ({
-              username: u.username,
-              email: u.email,
-              score: u.score,
-              completedLevels: u.currentLevel - 1,
-              elapsedTime: u.elapsedTime
-            }));
-          }
-        } catch (err) {
-          console.error("Failed to restore local user leaderboard", err);
-        }
-
-        // If no local users registered yet, seed the board with classic creepypasta mock hackers!
-        if (entries.length === 0) {
-          entries = [...mockHackers];
-        }
-      }
-
-      // Inject or update the active player's profile dynamically
-      if (state.isLoggedIn) {
-        const completedLevels = Math.max(0, state.currentLevel - 1);
-        const userIndex = entries.findIndex(e => e.email.toLowerCase() === state.email.toLowerCase());
-        
-        const userEntry: LeaderboardEntry = {
-          username: state.username,
-          email: state.email,
-          score: state.score,
-          completedLevels,
-          elapsedTime: state.elapsedTime,
-          isCurrentUser: true
-        };
-
-        if (userIndex > -1) {
-          // Keep the best progress
-          const existing = entries[userIndex];
-          if (
-            userEntry.completedLevels > existing.completedLevels ||
-            (userEntry.completedLevels === existing.completedLevels && userEntry.score > existing.score) ||
-            (userEntry.completedLevels === existing.completedLevels && userEntry.score === existing.score && userEntry.elapsedTime < existing.elapsedTime)
-          ) {
-            entries[userIndex] = userEntry;
-          } else {
-            entries[userIndex] = {
-              ...existing,
-              isCurrentUser: true
-            };
-          }
-        } else {
-          entries.push(userEntry);
-        }
-      }
-
-      // Order rankings correctly
-      const sorted = entries.sort((a, b) => {
-        if (b.completedLevels !== a.completedLevels) {
-          return b.completedLevels - a.completedLevels;
-        }
-        if (b.score !== a.score) {
-          return b.score - a.score;
-        }
-        return a.elapsedTime - b.elapsedTime;
-      });
-
-      setBoardData(sorted);
-      setIsLoading(false);
+    } catch (e) {
+      console.warn("Failed fetching production leaderboard, using local fallbacks", e);
     }
 
-    fetchLeaderboard();
+    // If database is offline or returned fallback status, use local localStorage database
+    if (!usingDb) {
+      try {
+        const localUsersRaw = localStorage.getItem("crypthunt_local_users");
+        if (localUsersRaw) {
+          const localUsers = JSON.parse(localUsersRaw);
+          entries = localUsers.map((u: any) => ({
+            username: u.username,
+            email: u.email,
+            score: u.score,
+            completedLevels: u.currentLevel - 1,
+            elapsedTime: u.elapsedTime
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to restore local user leaderboard", err);
+      }
+
+      // If no local users registered yet, seed the board with classic creepypasta mock hackers!
+      if (entries.length === 0) {
+        entries = [...mockHackers];
+      }
+    }
+
+    // Inject or update the active player's profile dynamically
+    if (state.isLoggedIn) {
+      const completedLevels = Math.max(0, state.currentLevel - 1);
+      const userIndex = entries.findIndex(e => e.email.toLowerCase() === state.email.toLowerCase());
+      
+      const userEntry: LeaderboardEntry = {
+        username: state.username,
+        email: state.email,
+        score: state.score,
+        completedLevels,
+        elapsedTime: state.elapsedTime,
+        isCurrentUser: true
+      };
+
+      if (userIndex > -1) {
+        // Keep the best progress
+        const existing = entries[userIndex];
+        if (
+          userEntry.completedLevels > existing.completedLevels ||
+          (userEntry.completedLevels === existing.completedLevels && userEntry.score > existing.score) ||
+          (userEntry.completedLevels === existing.completedLevels && userEntry.score === existing.score && userEntry.elapsedTime < existing.elapsedTime)
+        ) {
+          entries[userIndex] = userEntry;
+        } else {
+          entries[userIndex] = {
+            ...existing,
+            isCurrentUser: true
+          };
+        }
+      } else {
+        entries.push(userEntry);
+      }
+    }
+
+    // Order rankings correctly
+    const sorted = entries.sort((a, b) => {
+      if (b.completedLevels !== a.completedLevels) {
+        return b.completedLevels - a.completedLevels;
+      }
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+      return a.elapsedTime - b.elapsedTime;
+    });
+
+    setBoardData(sorted);
+    setLastUpdated(new Date());
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    fetchLeaderboard(true);
+
+    // Auto-update the leaderboard every 10 minutes
+    const interval = setInterval(() => {
+      fetchLeaderboard(false);
+    }, 10 * 60 * 1000);
+
+    return () => clearInterval(interval);
   }, [state.isLoggedIn, state.username, state.email, state.score, state.currentLevel, state.elapsedTime]);
 
   return (
@@ -189,6 +198,12 @@ export default function LeaderboardPage() {
             <p className="text-zinc-500 text-xs mt-2 font-share-tech uppercase tracking-widest">
               Live ranking values // Sorted by secure level tallies and escape timers
             </p>
+            <div className="flex items-center space-x-2 mt-3 bg-zinc-950/80 px-3 py-1 rounded border border-zinc-800 text-[10px] text-zinc-400 font-share-tech uppercase tracking-wider">
+              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+              <span>LIVE AUTO-SYNC (10M Interval)</span>
+              <span className="text-zinc-600">|</span>
+              <span>Last Sync: {lastUpdated.toLocaleTimeString()}</span>
+            </div>
           </div>
 
           {/* Ranking Table */}
