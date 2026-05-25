@@ -1,10 +1,10 @@
-# 💀 CRYPTHUNT: The Creepypasta ARG Hacking Labyrinth
+# CRYPTHUNT: The Creepypasta ARG Hacking Labyrinth
 
 **Crypthunt** is an immersive, high-fidelity, full-stack Alternate Reality Game (ARG) and cyber-puzzle adventure. Built with an analog horror aesthetic (terminal glitch effects, neon glow grids, and CRT scanlines), players must decode cyber cryptograms, escape haunted server directories, and survive five levels of terrifying creepypasta lore.
 
 ---
 
-## 🚀 Tech Stack Matrix
+## Tech Stack Matrix
 
 - **Frontend Core**: [Next.js 16 (App Router)](https://nextjs.org/) + [React 19](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
 - **Visual Design**: [Tailwind CSS](https://tailwindcss.com/) + [Framer Motion](https://www.framer.com/motion/) + [Lucide Icons](https://lucide.dev/)
@@ -15,7 +15,7 @@
 
 ---
 
-## 📂 Full Directory Structure
+##  Full Directory Structure
 
 ```text
 Crypthunt/
@@ -51,7 +51,7 @@ Crypthunt/
 
 ---
 
-## 💀 The Hacking Levels
+##  The Hacking Levels
 
 Players must solve 6 cryptograms for each creepypasta anomaly to unlock the exit hatch:
 1. **Level 1: Slender Man** — Decode the pages in the dark woods.
@@ -62,7 +62,7 @@ Players must solve 6 cryptograms for each creepypasta anomaly to unlock the exit
 
 ---
 
-## 🛡️ Core Mechanics & Architecture
+##  Core Mechanics & Architecture
 
 ### 1. Unified State Engine (`GameContext.tsx`)
 - Manages player active session parameters (username, score, level/question status, clock timer).
@@ -75,7 +75,7 @@ Players must solve 6 cryptograms for each creepypasta anomaly to unlock the exit
 
 ---
 
-## ⚙️ Setup & Deployment Guide
+##  Setup & Deployment Guide
 
 ### 1. Local Development Setup
 1. Clone the repository and install all dependencies:
