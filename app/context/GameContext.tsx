@@ -61,6 +61,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [state, setState] = useState<GameState>(defaultState);
   const [isInitialized, setIsInitialized] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const stateRef = useRef<GameState>(state);
+  stateRef.current = state;
   const router = useRouter();
   const pathname = usePathname();
 
@@ -141,7 +143,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const syncInterval = setInterval(async () => {
       try {
-        const response = await fetch(`/api/auth/sync?email=${encodeURIComponent(state.email)}&sessionToken=${encodeURIComponent(state.sessionToken)}`);
+        const currentState = stateRef.current;
+        if (!currentState.isLoggedIn) return;
+
+        const response = await fetch(`/api/auth/sync?email=${encodeURIComponent(currentState.email)}&sessionToken=${encodeURIComponent(currentState.sessionToken)}`);
         const json = await response.json();
         
         if (response.ok && json.success && json.databaseStatus === "CONNECTED") {
@@ -160,13 +165,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
             
             // Check if database progress is further along or different than local state
             const hasFurtherProgress = 
-              db.currentLevel > state.currentLevel ||
-              (db.currentLevel === state.currentLevel && db.currentQuestion > state.currentQuestion) ||
-              db.score > state.score ||
-              db.completedAt !== state.completedAt;
+              db.currentLevel > currentState.currentLevel ||
+              (db.currentLevel === currentState.currentLevel && db.currentQuestion > currentState.currentQuestion) ||
+              db.score > currentState.score ||
+              db.completedAt !== currentState.completedAt;
 
             // Check if elapsed time has fallen out of sync by more than 5 seconds
-            const outOfSyncTime = Math.abs(db.elapsedTime - state.elapsedTime) > 5;
+            const outOfSyncTime = Math.abs(db.elapsedTime - currentState.elapsedTime) > 5;
 
             if (hasFurtherProgress || outOfSyncTime) {
               setState((prev) => ({
@@ -184,11 +189,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
 
         // Push local ticking time to database to keep all browser sessions perfectly aligned
-        if (state.isLoggedIn && !state.completedAt && document.visibilityState === "visible") {
+        if (currentState.isLoggedIn && !currentState.completedAt && document.visibilityState === "visible") {
           const res = await fetch("/api/auth/sync", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: state.email, elapsedTime: state.elapsedTime, sessionToken: state.sessionToken }),
+            body: JSON.stringify({ email: currentState.email, elapsedTime: currentState.elapsedTime, sessionToken: currentState.sessionToken }),
           });
           const postJson = await res.json();
           if (res.ok && postJson.success && postJson.sessionActive === false) {
@@ -206,7 +211,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, 10000); // Poll and push every 10 seconds for real-time multi-browser response!
 
     return () => clearInterval(syncInterval);
-  }, [state.isLoggedIn, state.email, state.currentLevel, state.currentQuestion, state.score, state.elapsedTime, state.sessionToken, isInitialized]);
+  }, [state.isLoggedIn, isInitialized]);
 
   // Security gate redirects
   useEffect(() => {
