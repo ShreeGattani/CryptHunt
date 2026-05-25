@@ -188,12 +188,19 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
 
-        // Push local ticking time to database to keep all browser sessions perfectly aligned
+        // Push local ticking time and core progress to database to keep all browser sessions perfectly aligned
         if (currentState.isLoggedIn && !currentState.completedAt && document.visibilityState === "visible") {
           const res = await fetch("/api/auth/sync", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: currentState.email, elapsedTime: currentState.elapsedTime, sessionToken: currentState.sessionToken }),
+            body: JSON.stringify({ 
+              email: currentState.email, 
+              elapsedTime: currentState.elapsedTime, 
+              score: currentState.score,
+              currentLevel: currentState.currentLevel,
+              currentQuestion: currentState.currentQuestion,
+              sessionToken: currentState.sessionToken 
+            }),
           });
           const postJson = await res.json();
           if (res.ok && postJson.success && postJson.sessionActive === false) {
@@ -387,11 +394,30 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           isLevelComplete: true,
         };
       } else {
-        setState((prev) => ({
-          ...prev,
-          score: prev.score + addedPoints,
-          currentQuestion: prev.currentQuestion + 1,
-        }));
+        setState((prev) => {
+          const nextScore = prev.score + addedPoints;
+          const nextQuestion = prev.currentQuestion + 1;
+
+          // Instant cloud synchronization of progress
+          fetch("/api/auth/sync", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: prev.email,
+              elapsedTime: prev.elapsedTime,
+              score: nextScore,
+              currentLevel: prev.currentLevel,
+              currentQuestion: nextQuestion,
+              sessionToken: prev.sessionToken
+            })
+          }).catch(err => console.warn("Instant answer sync skipped", err));
+
+          return {
+            ...prev,
+            score: nextScore,
+            currentQuestion: nextQuestion,
+          };
+        });
         return {
           success: true,
           message: `ACCESS GRANTED! +${addedPoints} pts. Moving to next lock...`,

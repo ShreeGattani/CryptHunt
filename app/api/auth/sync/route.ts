@@ -84,7 +84,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, elapsedTime, sessionToken } = body;
+    const { email, elapsedTime, score, currentLevel, currentQuestion, sessionToken } = body;
 
     if (!email || elapsedTime === undefined) {
       return NextResponse.json(
@@ -120,13 +120,19 @@ export async function POST(request: Request) {
 
     await prisma.user.update({
       where: { email: email.toLowerCase() },
-      data: { elapsedTime: parseInt(elapsedTime, 10) },
+      data: { 
+        elapsedTime: parseInt(elapsedTime, 10),
+        score: score !== undefined ? parseInt(score, 10) : undefined,
+        currentLevel: currentLevel !== undefined ? parseInt(currentLevel, 10) : undefined,
+        currentQuestion: currentQuestion !== undefined ? parseInt(currentQuestion, 10) : undefined,
+      },
     });
 
     return NextResponse.json({
       success: true,
       databaseStatus: "CONNECTED",
-      message: "Elapsed time synchronized successfully."
+      sessionActive: true,
+      message: "Game state synchronized successfully."
     });
   } catch (error: any) {
     console.error("Database sync post error:", error);
