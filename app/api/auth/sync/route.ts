@@ -18,6 +18,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const email = searchParams.get("email");
+    const sessionToken = searchParams.get("sessionToken");
 
     if (!email) {
       return NextResponse.json(
@@ -31,6 +32,7 @@ export async function GET(request: Request) {
       return NextResponse.json({
         success: true,
         databaseStatus: "OFFLINE_FALLBACK",
+        sessionActive: true,
         data: null,
       });
     }
@@ -43,6 +45,7 @@ export async function GET(request: Request) {
         currentQuestion: true,
         elapsedTime: true,
         completedAt: true,
+        sessionToken: true,
       },
     });
 
@@ -53,10 +56,20 @@ export async function GET(request: Request) {
       );
     }
 
+    // Verify session state matches (single login enforcement check)
+    const isSessionActive = !sessionToken || !user.sessionToken || user.sessionToken === sessionToken;
+
     return NextResponse.json({
       success: true,
       databaseStatus: "CONNECTED",
-      data: user,
+      sessionActive: isSessionActive,
+      data: isSessionActive ? {
+        score: user.score,
+        currentLevel: user.currentLevel,
+        currentQuestion: user.currentQuestion,
+        elapsedTime: user.elapsedTime,
+        completedAt: user.completedAt
+      } : null,
     });
   } catch (error: any) {
     console.error("Database sync fetch error:", error);
@@ -71,7 +84,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, elapsedTime } = body;
+    const { email, elapsedTime, sessionToken } = body;
 
     if (!email || elapsedTime === undefined) {
       return NextResponse.json(
@@ -86,6 +99,23 @@ export async function POST(request: Request) {
         success: true,
         databaseStatus: "OFFLINE_FALLBACK",
       });
+    }
+
+    // Verify session state matches before updating ticking time
+    if (sessionToken) {
+      const user = await prisma.user.findUnique({
+        where: { email: email.toLowerCase() },
+        select: { sessionToken: true },
+      });
+
+      if (user && user.sessionToken && user.sessionToken !== sessionToken) {
+        return NextResponse.json({
+          success: true,
+          databaseStatus: "CONNECTED",
+          sessionActive: false,
+          message: "Session terminated. Lock overridden."
+        });
+      }
     }
 
     await prisma.user.update({

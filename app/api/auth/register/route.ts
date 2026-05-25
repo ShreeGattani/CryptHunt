@@ -52,12 +52,15 @@ export async function POST(request: Request) {
           );
         }
 
+        const sessionToken = Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+        
         // Register user
         const user = await prisma.user.create({
           data: {
             username,
             email,
-            password // Storing simple string for started project
+            password, // Storing simple string for started project
+            sessionToken
           }
         });
 
@@ -69,7 +72,8 @@ export async function POST(request: Request) {
             username: user.username,
             email: user.email,
             score: user.score,
-            currentLevel: user.currentLevel
+            currentLevel: user.currentLevel,
+            sessionToken
           }
         });
       } catch (dbError: any) {

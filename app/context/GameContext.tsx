@@ -14,6 +14,7 @@ export interface GameState {
   elapsedTime: number;
   completedAt: string | null;
   isLoggedIn: boolean;
+  sessionToken: string;
 }
 
 interface RegisterUserPayload {
@@ -25,6 +26,7 @@ interface RegisterUserPayload {
   currentQuestion: number;
   elapsedTime: number;
   completedAt: string | null;
+  sessionToken: string;
 }
 
 interface GameContextType {
@@ -50,6 +52,7 @@ const defaultState: GameState = {
   elapsedTime: 0,
   completedAt: null,
   isLoggedIn: false,
+  sessionToken: "",
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -138,43 +141,64 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const syncInterval = setInterval(async () => {
       try {
-        const response = await fetch(`/api/auth/sync?email=${encodeURIComponent(state.email)}`);
+        const response = await fetch(`/api/auth/sync?email=${encodeURIComponent(state.email)}&sessionToken=${encodeURIComponent(state.sessionToken)}`);
         const json = await response.json();
         
-        if (response.ok && json.success && json.databaseStatus === "CONNECTED" && json.data) {
-          const db = json.data;
-          
-          // Check if database progress is further along or different than local state
-          const hasFurtherProgress = 
-            db.currentLevel > state.currentLevel ||
-            (db.currentLevel === state.currentLevel && db.currentQuestion > state.currentQuestion) ||
-            db.score > state.score ||
-            db.completedAt !== state.completedAt;
+        if (response.ok && json.success && json.databaseStatus === "CONNECTED") {
+          // If session is terminated due to single-login override, kick user out!
+          if (json.sessionActive === false) {
+            clearInterval(syncInterval);
+            setState(defaultState);
+            localStorage.removeItem("crypthunt_session");
+            alert("🚨 SESSION TERMINATED: This account has been logged in from another device/browser. Only one active login is permitted.");
+            router.push("/");
+            return;
+          }
 
-          // Check if elapsed time has fallen out of sync by more than 5 seconds
-          const outOfSyncTime = Math.abs(db.elapsedTime - state.elapsedTime) > 5;
+          if (json.data) {
+            const db = json.data;
+            
+            // Check if database progress is further along or different than local state
+            const hasFurtherProgress = 
+              db.currentLevel > state.currentLevel ||
+              (db.currentLevel === state.currentLevel && db.currentQuestion > state.currentQuestion) ||
+              db.score > state.score ||
+              db.completedAt !== state.completedAt;
 
-          if (hasFurtherProgress || outOfSyncTime) {
-            setState((prev) => ({
-              ...prev,
-              score: Math.max(prev.score, db.score),
-              currentLevel: Math.max(prev.currentLevel, db.currentLevel),
-              currentQuestion: db.currentLevel > prev.currentLevel 
-                ? db.currentQuestion 
-                : (db.currentLevel === prev.currentLevel ? Math.max(prev.currentQuestion, db.currentQuestion) : prev.currentQuestion),
-              elapsedTime: db.elapsedTime,
-              completedAt: db.completedAt || prev.completedAt,
-            }));
+            // Check if elapsed time has fallen out of sync by more than 5 seconds
+            const outOfSyncTime = Math.abs(db.elapsedTime - state.elapsedTime) > 5;
+
+            if (hasFurtherProgress || outOfSyncTime) {
+              setState((prev) => ({
+                ...prev,
+                score: Math.max(prev.score, db.score),
+                currentLevel: Math.max(prev.currentLevel, db.currentLevel),
+                currentQuestion: db.currentLevel > prev.currentLevel 
+                  ? db.currentQuestion 
+                  : (db.currentLevel === prev.currentLevel ? Math.max(prev.currentQuestion, db.currentQuestion) : prev.currentQuestion),
+                elapsedTime: db.elapsedTime,
+                completedAt: db.completedAt || prev.completedAt,
+              }));
+            }
           }
         }
 
         // Push local ticking time to database to keep all browser sessions perfectly aligned
         if (state.isLoggedIn && !state.completedAt && document.visibilityState === "visible") {
-          await fetch("/api/auth/sync", {
+          const res = await fetch("/api/auth/sync", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: state.email, elapsedTime: state.elapsedTime }),
+            body: JSON.stringify({ email: state.email, elapsedTime: state.elapsedTime, sessionToken: state.sessionToken }),
           });
+          const postJson = await res.json();
+          if (res.ok && postJson.success && postJson.sessionActive === false) {
+            clearInterval(syncInterval);
+            setState(defaultState);
+            localStorage.removeItem("crypthunt_session");
+            alert("🚨 SESSION TERMINATED: This account has been logged in from another device/browser. Only one active login is permitted.");
+            router.push("/");
+            return;
+          }
         }
       } catch (e) {
         console.warn("Background session sync skipped due to connection speed", e);
@@ -182,7 +206,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, 10000); // Poll and push every 10 seconds for real-time multi-browser response!
 
     return () => clearInterval(syncInterval);
-  }, [state.isLoggedIn, state.email, state.currentLevel, state.currentQuestion, state.score, state.elapsedTime, isInitialized]);
+  }, [state.isLoggedIn, state.email, state.currentLevel, state.currentQuestion, state.score, state.elapsedTime, state.sessionToken, isInitialized]);
 
   // Security gate redirects
   useEffect(() => {
@@ -233,7 +257,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           currentLevel: 1,
           currentQuestion: 1,
           elapsedTime: 0,
-          completedAt: null
+          completedAt: null,
+          sessionToken: "local_mock_token"
         });
 
         localStorage.setItem("crypthunt_local_users", JSON.stringify(localUsers));
@@ -250,6 +275,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         elapsedTime: 0,
         completedAt: null,
         isLoggedIn: true,
+        sessionToken: data.user?.sessionToken || "local_mock_token",
       };
       
       setState(newState);
@@ -296,6 +322,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           elapsedTime: foundUser.elapsedTime,
           completedAt: foundUser.completedAt,
           isLoggedIn: true,
+          sessionToken: foundUser.sessionToken || "local_mock_token",
         };
 
         setState(newState);
@@ -303,7 +330,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: true, message: "Handshake verified offline. Session restored." };
       }
 
-      // Live MySQL database verified login response
+      // Live database verified login response
       const newState: GameState = {
         username: data.user.username,
         email: data.user.email,
@@ -314,6 +341,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         elapsedTime: data.user.elapsedTime,
         completedAt: data.user.completedAt,
         isLoggedIn: true,
+        sessionToken: data.user.sessionToken || "local_mock_token",
       };
 
       setState(newState);

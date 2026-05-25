@@ -41,6 +41,12 @@ export async function POST(request: Request) {
           );
         }
 
+        const sessionToken = Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { sessionToken }
+        });
+
         return NextResponse.json({
           success: true,
           message: "Authentication handshake successful.",
@@ -51,7 +57,8 @@ export async function POST(request: Request) {
             score: user.score,
             currentLevel: user.currentLevel,
             currentQuestion: user.currentQuestion,
-            elapsedTime: user.elapsedTime
+            elapsedTime: user.elapsedTime,
+            sessionToken
           }
         });
       } catch (dbError: any) {
