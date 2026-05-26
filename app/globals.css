@@ -10,6 +10,16 @@
   --font-jetbrains: 'JetBrains Mono', monospace;
 }
 
+@font-face {
+  font-family: "vcr-mono";
+  src: url("/fonts/vcr.ttf") format("truetype");
+  font-display: swap;
+}
+
+.vcr-font {
+  font-family: "vcr-mono", monospace;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -25,7 +35,7 @@ body {
   position: relative;
 }
 
-/* CRT Scanlines Overlay */
+/* CRT Scanlines Overlay
 .crt-overlay::before {
   content: " ";
   display: block;
@@ -54,6 +64,7 @@ body {
   pointer-events: none;
   animation: flicker 0.15s infinite;
 }
+*/
 
 /* Custom Glitch Animations */
 @keyframes flicker {
@@ -119,7 +130,7 @@ body {
   animation: pulse-cyan 2.5s infinite ease-in-out;
 }
 
-/* VHS static scan */
+/* VHS static scan 
 @keyframes vhs-scan {
   0% { transform: translateY(-100%); }
   100% { transform: translateY(100%); }
@@ -135,6 +146,7 @@ body {
   pointer-events: none;
   z-index: 10;
 }
+  */
 
 /* Custom fonts helper */
 .font-orbitron {
@@ -157,3 +169,5 @@ body {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */
 }
+
+
