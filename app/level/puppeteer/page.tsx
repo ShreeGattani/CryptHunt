@@ -7,6 +7,23 @@ import { useRouter } from "next/navigation";
 import "./puppet.css";
 
 export default function PuppeteerPage() {
+  const [bgImage, setBgImage] = useState("/images/puppeteer/puppet1.png");
+
+  useEffect(() => {
+  const totalImages = 5;
+
+  let current =
+    Number(localStorage.getItem("puppet-bg")) || 1;
+
+  const next = current + 1 > totalImages
+    ? 1
+    : current + 1;
+
+  setBgImage(`/images/puppeteer/puppet${current}.png`);
+
+  localStorage.setItem("puppet-bg", String(next));
+}, []);
+
   const {
     state,
     submitAnswer,
@@ -60,8 +77,14 @@ export default function PuppeteerPage() {
     }
   };
 
+
   return (
-    <div className="puppeteer-container">
+    <div
+  className="puppeteer-container"
+  style={{
+    backgroundImage: `url(${bgImage})`,
+  }}
+>
 
   <div className="puppeteer-content vcr-font">
 
