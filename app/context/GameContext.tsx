@@ -15,6 +15,7 @@ export interface GameState {
   completedAt: string | null;
   isLoggedIn: boolean;
   sessionToken: string;
+  updatedAt?: string;
 }
 
 interface RegisterUserPayload {
@@ -27,6 +28,7 @@ interface RegisterUserPayload {
   elapsedTime: number;
   completedAt: string | null;
   sessionToken: string;
+  updatedAt?: string;
 }
 
 interface GameContextType {
@@ -40,6 +42,7 @@ interface GameContextType {
   currentLevelData: LevelData | null;
   currentQuestionData: Question | null;
   formatTime: (seconds: number) => string;
+  formatDate: (dateStr: string) => string;
 }
 
 const defaultState: GameState = {
@@ -53,6 +56,7 @@ const defaultState: GameState = {
   completedAt: null,
   isLoggedIn: false,
   sessionToken: "",
+  updatedAt: "",
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -90,53 +94,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [state, isInitialized]);
 
-  // Global elapsed timer ticking effect
-  useEffect(() => {
-    if (state.isLoggedIn && !state.completedAt) {
-      timerRef.current = setInterval(() => {
-        setState((prev) => {
-          const nextTime = prev.elapsedTime + 1;
-          
-          // Lazily update local storage users array in background to persist progress offline!
-          if (localStorage.getItem("crypthunt_local_users")) {
-            try {
-              const localUsers: RegisterUserPayload[] = JSON.parse(localStorage.getItem("crypthunt_local_users") || "[]");
-              const userIdx = localUsers.findIndex(u => u.email.toLowerCase() === prev.email.toLowerCase());
-              if (userIdx > -1) {
-                localUsers[userIdx] = {
-                  ...localUsers[userIdx],
-                  score: prev.score,
-                  currentLevel: prev.currentLevel,
-                  currentQuestion: prev.currentQuestion,
-                  elapsedTime: nextTime,
-                  completedAt: prev.completedAt
-                };
-                localStorage.setItem("crypthunt_local_users", JSON.stringify(localUsers));
-              }
-            } catch (e) {
-              console.error("Failed background state sync", e);
-            }
-          }
-
-          return {
-            ...prev,
-            elapsedTime: nextTime,
-          };
-        });
-      }, 1000);
-    } else {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    }
-
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-    };
-  }, [state.isLoggedIn, state.completedAt]);
-
   // Real-time multi-browser/multi-session score & progress synchronization
   useEffect(() => {
     if (!state.isLoggedIn || !isInitialized) return;
@@ -168,12 +125,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
               db.currentLevel > currentState.currentLevel ||
               (db.currentLevel === currentState.currentLevel && db.currentQuestion > currentState.currentQuestion) ||
               db.score > currentState.score ||
-              db.completedAt !== currentState.completedAt;
+              db.completedAt !== currentState.completedAt ||
+              (db.updatedAt && db.updatedAt !== currentState.updatedAt);
 
-            // Check if elapsed time has fallen out of sync by more than 5 seconds
-            const outOfSyncTime = Math.abs(db.elapsedTime - currentState.elapsedTime) > 5;
-
-            if (hasFurtherProgress || outOfSyncTime) {
+            if (hasFurtherProgress) {
               setState((prev) => ({
                 ...prev,
                 score: Math.max(prev.score, db.score),
@@ -183,13 +138,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
                   : (db.currentLevel === prev.currentLevel ? Math.max(prev.currentQuestion, db.currentQuestion) : prev.currentQuestion),
                 elapsedTime: db.elapsedTime,
                 completedAt: db.completedAt || prev.completedAt,
+                updatedAt: db.updatedAt || prev.updatedAt,
               }));
             }
           }
         }
 
-        // Push local ticking time and core progress to database to keep all browser sessions perfectly aligned
-        if (currentState.isLoggedIn && !currentState.completedAt && document.visibilityState === "visible") {
+        // Push local progress to database to keep all browser sessions perfectly aligned
+        if (currentState.isLoggedIn && !currentState.completedAt) {
           const res = await fetch("/api/auth/sync", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -397,6 +353,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setState((prev) => {
           const nextScore = prev.score + addedPoints;
           const nextQuestion = prev.currentQuestion + 1;
+          const nowStr = new Date().toISOString();
 
           // Instant cloud synchronization of progress
           fetch("/api/auth/sync", {
@@ -412,10 +369,32 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
             })
           }).catch(err => console.warn("Instant answer sync skipped", err));
 
+          // Persist progress offline in background
+          if (localStorage.getItem("crypthunt_local_users")) {
+            try {
+              const localUsers: RegisterUserPayload[] = JSON.parse(localStorage.getItem("crypthunt_local_users") || "[]");
+              const userIdx = localUsers.findIndex(u => u.email.toLowerCase() === prev.email.toLowerCase());
+              if (userIdx > -1) {
+                localUsers[userIdx] = {
+                  ...localUsers[userIdx],
+                  score: nextScore,
+                  currentLevel: prev.currentLevel,
+                  currentQuestion: nextQuestion,
+                  completedAt: prev.completedAt,
+                  updatedAt: nowStr
+                };
+                localStorage.setItem("crypthunt_local_users", JSON.stringify(localUsers));
+              }
+            } catch (e) {
+              console.error("Failed offline progress sync", e);
+            }
+          }
+
           return {
             ...prev,
             score: nextScore,
             currentQuestion: nextQuestion,
+            updatedAt: nowStr,
           };
         });
         return {
@@ -440,6 +419,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const nextLevel = prev.currentLevel + 1;
         const allDone = nextLevel > 5;
         const finalPoints = currentQuestionData ? currentQuestionData.points : 0;
+        const nextScore = prev.score + finalPoints;
+        const nowStr = new Date().toISOString();
 
         // Post completion to MySQL / Mock API routes in background
         fetch("/api/quiz", {
@@ -448,18 +429,40 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           body: JSON.stringify({
             username: prev.username,
             email: prev.email,
-            score: prev.score + finalPoints,
+            score: nextScore,
             completedLevel: prev.currentLevel,
             elapsedTime: prev.elapsedTime,
           }),
         }).catch(err => console.error("Database score sync failed, synced locally:", err));
 
+        // Persist progress offline in background
+        if (localStorage.getItem("crypthunt_local_users")) {
+          try {
+            const localUsers: RegisterUserPayload[] = JSON.parse(localStorage.getItem("crypthunt_local_users") || "[]");
+            const userIdx = localUsers.findIndex(u => u.email.toLowerCase() === prev.email.toLowerCase());
+            if (userIdx > -1) {
+              localUsers[userIdx] = {
+                ...localUsers[userIdx],
+                score: nextScore,
+                currentLevel: nextLevel,
+                currentQuestion: 1,
+                completedAt: allDone ? nowStr : null,
+                updatedAt: nowStr
+              };
+              localStorage.setItem("crypthunt_local_users", JSON.stringify(localUsers));
+            }
+          } catch (e) {
+            console.error("Failed offline progress sync", e);
+          }
+        }
+
         return {
           ...prev,
-          score: prev.score + finalPoints,
+          score: nextScore,
           currentLevel: nextLevel,
           currentQuestion: 1,
-          completedAt: allDone ? new Date().toISOString() : null,
+          completedAt: allDone ? nowStr : null,
+          updatedAt: nowStr,
         };
       }
       return prev;
@@ -487,6 +490,26 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     ].join(":");
   };
 
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return "N/A";
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      const day = d.getDate();
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const month = months[d.getMonth()];
+      let hours = d.getHours();
+      const minutes = d.getMinutes().toString().padStart(2, "0");
+      const seconds = d.getSeconds().toString().padStart(2, "0");
+      const ampm = hours >= 12 ? "PM" : "AM";
+      hours = hours % 12;
+      hours = hours ? hours : 12; // the hour '0' should be '12'
+      return `${day} ${month}, ${hours.toString().padStart(2, "0")}:${minutes}:${seconds} ${ampm}`;
+    } catch (e) {
+      return dateStr;
+    }
+  };
+
   return (
     <GameContext.Provider
       value={{
@@ -500,6 +523,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         currentLevelData,
         currentQuestionData,
         formatTime,
+        formatDate,
       }}
     >
       {children}

@@ -124,11 +124,11 @@ export default function LevelPage({ params }: PageProps) {
           <span>{currentLevelData.name.toUpperCase()} Encounter</span>
         </div>
 
-        {/* Global Timer HUD */}
+        {/* Hunt Active Status HUD */}
         <div className="flex items-center space-x-2 bg-black/80 px-4 py-1.5 rounded border border-zinc-800 font-orbitron text-xs">
-          <Timer className="w-4 h-4 text-cyan-400 animate-spin" style={{ animationDuration: "3s" }} />
-          <span className="text-zinc-500 font-share-tech">TIME:</span>
-          <span className="text-cyan-400 tracking-widest font-bold">{formatTime(state.elapsedTime)}</span>
+          <span className="w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
+          <span className="text-zinc-500 font-share-tech">HUNT STATUS:</span>
+          <span className="text-red-500 tracking-wider font-bold">ACTIVE (30H)</span>
         </div>
       </nav>
 

@@ -46,6 +46,7 @@ export async function GET(request: Request) {
         elapsedTime: true,
         completedAt: true,
         sessionToken: true,
+        updatedAt: true,
       },
     });
 
@@ -68,7 +69,8 @@ export async function GET(request: Request) {
         currentLevel: user.currentLevel,
         currentQuestion: user.currentQuestion,
         elapsedTime: user.elapsedTime,
-        completedAt: user.completedAt
+        completedAt: user.completedAt,
+        updatedAt: user.updatedAt.toISOString(),
       } : null,
     });
   } catch (error: any) {

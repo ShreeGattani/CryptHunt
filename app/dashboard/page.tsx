@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 
 export default function DashboardPage() {
-  const { state, logout, resetGame, formatTime } = useGame();
+  const { state, logout, resetGame, formatTime, formatDate } = useGame();
   const [isRulesOpen, setIsRulesOpen] = useState(false);
 
   // If not logged in, state effect in Context redirects, show null fallback
@@ -96,11 +96,11 @@ export default function DashboardPage() {
             <span>[SESSION LOGGED] Acknowledge: Internet legends materialize in this domain. Complete each decryption in sequential order.</span>
           </div>
 
-          {/* Running Clock Ticker */}
-          <div className="flex items-center space-x-2 bg-black/80 px-4 py-1.5 rounded border border-zinc-800 font-orbitron text-xs">
-            <Timer className="w-4 h-4 text-cyan-400 animate-spin" style={{ animationDuration: "3s" }} />
-            <span className="text-zinc-500 font-share-tech">TIME ELAPSED:</span>
-            <span className="text-cyan-400 tracking-widest font-bold">{formatTime(state.elapsedTime)}</span>
+          {/* Hunt Active Status HUD */}
+          <div className="flex items-center space-x-3 bg-black/80 px-4 py-1.5 rounded border border-zinc-800 font-orbitron text-xs">
+            <span className="w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
+            <span className="text-zinc-500 font-share-tech">HUNT TIMELINE:</span>
+            <span className="text-red-500 tracking-wider font-bold">6 JUN 12:00 PM - 7 JUN 06:00 PM</span>
           </div>
         </div>
 
@@ -122,8 +122,8 @@ export default function DashboardPage() {
                 <span className="text-xl font-bold text-emerald-400 font-orbitron">{state.score} PTS</span>
               </div>
               <div className="bg-black/60 p-4 border border-emerald-500/20 rounded">
-                <span className="text-[10px] text-zinc-500 block uppercase">Time Spent Surviving</span>
-                <span className="text-xl font-bold text-cyan-400 font-orbitron">{formatTime(state.elapsedTime)}</span>
+                <span className="text-[10px] text-zinc-500 block uppercase">Last Solve Time</span>
+                <span className="text-[11px] font-bold text-cyan-400 font-orbitron">{state.updatedAt ? formatDate(state.updatedAt) : "N/A"}</span>
               </div>
               <div className="bg-black/60 p-4 border border-emerald-500/20 rounded">
                 <span className="text-[10px] text-zinc-500 block uppercase">Rank Status</span>

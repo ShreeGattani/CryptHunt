@@ -10,7 +10,7 @@ interface LeaderboardEntry {
   email: string;
   score: number;
   completedLevels: number;
-  elapsedTime: number;
+  updatedAt: string;
   isCurrentUser?: boolean;
 }
 
@@ -20,40 +20,40 @@ const mockHackers: LeaderboardEntry[] = [
     email: "elegy@haunted.n64",
     score: 2900,
     completedLevels: 5,
-    elapsedTime: 620, // ~10m 20s
+    updatedAt: "2026-06-06T13:20:00.000Z",
   },
   {
     username: "SKIN_TAKER_X",
     email: "laughingstock@candle.cove",
     score: 2100,
     completedLevels: 4,
-    elapsedTime: 940,
+    updatedAt: "2026-06-06T15:45:00.000Z",
   },
   {
     username: "SLENDER_STALKER",
     email: "forest_pages@woods.net",
     score: 1100,
     completedLevels: 3,
-    elapsedTime: 540,
+    updatedAt: "2026-06-06T20:10:00.000Z",
   },
   {
     username: "MARIONETTE_9",
     email: "jonathan_strings@theatre.org",
     score: 680,
     completedLevels: 2,
-    elapsedTime: 380,
+    updatedAt: "2026-06-07T09:30:00.000Z",
   },
   {
     username: "WW1_SOLDIER",
     email: "eyeless_scalpel@operating.net",
     score: 280,
     completedLevels: 1,
-    elapsedTime: 120,
+    updatedAt: "2026-06-07T14:15:00.000Z",
   }
 ];
 
 export default function LeaderboardPage() {
-  const { state, formatTime } = useGame();
+  const { state, formatDate } = useGame();
   const [boardData, setBoardData] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
@@ -86,7 +86,7 @@ export default function LeaderboardPage() {
             email: u.email,
             score: u.score,
             completedLevels: u.currentLevel - 1,
-            elapsedTime: u.elapsedTime
+            updatedAt: u.updatedAt || new Date().toISOString()
           }));
         }
       } catch (err) {
@@ -109,7 +109,7 @@ export default function LeaderboardPage() {
         email: state.email,
         score: state.score,
         completedLevels,
-        elapsedTime: state.elapsedTime,
+        updatedAt: state.updatedAt || new Date().toISOString(),
         isCurrentUser: true
       };
 
@@ -119,7 +119,7 @@ export default function LeaderboardPage() {
         if (
           userEntry.completedLevels > existing.completedLevels ||
           (userEntry.completedLevels === existing.completedLevels && userEntry.score > existing.score) ||
-          (userEntry.completedLevels === existing.completedLevels && userEntry.score === existing.score && userEntry.elapsedTime < existing.elapsedTime)
+          (userEntry.completedLevels === existing.completedLevels && userEntry.score === existing.score && new Date(userEntry.updatedAt).getTime() < new Date(existing.updatedAt).getTime())
         ) {
           entries[userIndex] = userEntry;
         } else {
@@ -133,7 +133,7 @@ export default function LeaderboardPage() {
       }
     }
 
-    // Order rankings correctly
+    // Order rankings correctly: highest levels first, then highest score, then earliest solve time
     const sorted = entries.sort((a, b) => {
       if (b.completedLevels !== a.completedLevels) {
         return b.completedLevels - a.completedLevels;
@@ -141,7 +141,7 @@ export default function LeaderboardPage() {
       if (b.score !== a.score) {
         return b.score - a.score;
       }
-      return a.elapsedTime - b.elapsedTime;
+      return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
     });
 
     setBoardData(sorted);
@@ -196,7 +196,7 @@ export default function LeaderboardPage() {
               LABYRINTH HIGH-SCORE MATRIX
             </h1>
             <p className="text-zinc-500 text-xs mt-2 font-share-tech uppercase tracking-widest">
-              Live ranking values // Sorted by secure level tallies and escape timers
+              Live ranking values // Sorted by secure level tallies and earliest solve timestamps
             </p>
             <div className="flex items-center space-x-2 mt-3 bg-zinc-950/80 px-3 py-1 rounded border border-zinc-800 text-[10px] text-zinc-400 font-share-tech uppercase tracking-wider">
               <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
@@ -215,7 +215,7 @@ export default function LeaderboardPage() {
                   <th className="py-4 px-6">Hacker Codename / Node</th>
                   <th className="py-4 px-6 text-center">Secure Ports</th>
                   <th className="py-4 px-6 text-center">Survival Score</th>
-                  <th className="py-4 px-6 text-center">Clock Duration</th>
+                  <th className="py-4 px-6 text-center">Solve Timestamp</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/60 font-mono">
@@ -308,12 +308,11 @@ export default function LeaderboardPage() {
                           {entry.score} PTS
                         </td>
 
-                        {/* Survival Clock Duration Column */}
+                        {/* Solve Timestamp Column */}
                         <td className="py-4 px-6 text-center">
                           <div className="flex items-center justify-center space-x-1.5 text-zinc-400">
-                            <Timer className="w-3.5 h-3.5 text-zinc-600" />
-                            <span className="font-bold tracking-widest">
-                              {formatTime(entry.elapsedTime)}
+                            <span className="font-bold tracking-wider">
+                              {formatDate(entry.updatedAt)}
                             </span>
                           </div>
                         </td>

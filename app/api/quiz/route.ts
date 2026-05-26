@@ -120,12 +120,12 @@ export async function GET() {
             email: true,
             score: true,
             currentLevel: true,
-            elapsedTime: true,
+            updatedAt: true,
           },
           orderBy: [
             { currentLevel: "desc" },
             { score: "desc" },
-            { elapsedTime: "asc" }
+            { updatedAt: "asc" }
           ]
         });
 
@@ -135,7 +135,7 @@ export async function GET() {
           email: u.email,
           score: u.score,
           completedLevels: Math.max(0, u.currentLevel - 1),
-          elapsedTime: u.elapsedTime
+          updatedAt: u.updatedAt.toISOString()
         }));
 
         return NextResponse.json({
