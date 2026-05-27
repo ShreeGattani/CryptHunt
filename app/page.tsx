@@ -17,6 +17,61 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [consoleLogs, setConsoleLogs] = useState<string[]>([]);
 
+  // OTP Verification State
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpCount, setOtpCount] = useState(0);
+  const [otpMessage, setOtpMessage] = useState("");
+  const [devOtp, setDevOtp] = useState("");
+
+  const handleSendOtp = async () => {
+    if (!email.trim() || !email.includes("@")) {
+      setError("VALID CORE EMAIL NODE REQUIRED FOR DISPATCH.");
+      return;
+    }
+    setError("");
+    setOtpLoading(true);
+    setOtpMessage("");
+    setDevOtp("");
+
+    try {
+      const response = await fetch("/api/auth/otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await response.json();
+      if (response.ok && data.success) {
+        setOtpSent(true);
+        setOtpCount(data.sentCount || 1);
+        setOtpMessage(data.message || "OTP transmission verified.");
+        if (data.devOtp) {
+          setDevOtp(data.devOtp);
+          setConsoleLogs((prev) => [
+            ...prev,
+            `[DEV SIMULATION: VERIFICATION KEY DETECTED = ${data.devOtp}]`
+          ]);
+        }
+        setConsoleLogs((prev) => [
+          ...prev,
+          `[VERIFICATION DISPATCHED: ATTEMPT ${data.sentCount || 1}/2]`
+        ]);
+      } else {
+        setError(data.message || "OTP transmission denied.");
+        setConsoleLogs((prev) => [
+          ...prev,
+          `[DISPATCH FAILED: ${data.message?.toUpperCase() || "ERROR"}]`
+        ]);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError("TRANSMISSION ERROR. CONNECTION INTERFERENCE.");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
   // Simulation of boot sequence logs
   useEffect(() => {
     const logs = [
@@ -68,7 +123,7 @@ export default function LoginPage() {
 
     let res;
     if (authMode === "register") {
-      res = await register(username, email, password);
+      res = await register(username, email, password, otp);
     } else {
       res = await login(email, password);
     }
@@ -189,21 +244,76 @@ export default function LoginPage() {
               <label className="block text-xs uppercase tracking-widest text-zinc-400 font-share-tech mb-2">
                 Core Email Node
               </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-600">
-                  <Cpu className="w-4 h-4" />
-                </span>
-                <input
-                  type="email"
-                  placeholder="e.g. gateway@crypt.net"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-zinc-950/70 border border-zinc-800 focus:border-red-600 focus:ring-1 focus:ring-red-600 text-zinc-100 placeholder-zinc-750 text-sm rounded px-3 py-2.5 pl-10 focus:outline-none transition-all font-mono"
-                  disabled={loading}
-                  required
-                />
+              <div className="flex space-x-2">
+                <div className="relative flex-1">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-600">
+                    <Cpu className="w-4 h-4" />
+                  </span>
+                  <input
+                    type="email"
+                    placeholder="e.g. gateway@crypt.net"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      // Reset OTP states if email is changed
+                      setOtpSent(false);
+                      setOtpMessage("");
+                    }}
+                    className="w-full bg-zinc-950/70 border border-zinc-800 focus:border-red-600 focus:ring-1 focus:ring-red-600 text-zinc-100 placeholder-zinc-750 text-sm rounded px-3 py-2.5 pl-10 focus:outline-none transition-all font-mono animate-pulse"
+                    disabled={loading || otpLoading}
+                    required
+                  />
+                </div>
+                {authMode === "register" && (
+                  <button
+                    type="button"
+                    onClick={handleSendOtp}
+                    disabled={loading || otpLoading || otpCount >= 2}
+                    className="bg-red-950/20 hover:bg-red-900/40 border border-red-600 hover:border-red-500 hover:shadow-[0_0_10px_rgba(239,68,68,0.3)] text-red-500 hover:text-red-400 font-share-tech uppercase tracking-widest text-xs px-4 rounded transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center space-x-1.5 cursor-pointer"
+                  >
+                    {otpLoading ? (
+                      <div className="w-3.5 h-3.5 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <span>SEND OTP</span>
+                    )}
+                  </button>
+                )}
               </div>
+              {/* OTP Sent status message */}
+              {authMode === "register" && otpMessage && (
+                <div className={`text-[10px] mt-1.5 uppercase font-mono tracking-wider font-bold ${otpCount >= 2 && !otpSent ? 'text-red-500' : 'text-emerald-500'}`}>
+                  {otpMessage}
+                </div>
+              )}
             </div>
+
+            {/* OTP Verification Input (only visible in Register mode) */}
+            {authMode === "register" && (
+              <div>
+                <label className="block text-xs uppercase tracking-widest text-zinc-400 font-share-tech mb-2">
+                  Decryption OTP Key
+                </label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-zinc-600">
+                    <Terminal className="w-4 h-4" />
+                  </span>
+                  <input
+                    type="text"
+                    placeholder={otpSent ? "ENTER 6-DIGIT CODE" : "REQUEST VERIFICATION KEY FIRST"}
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").substring(0, 6))}
+                    className="w-full bg-zinc-950/70 border border-zinc-800 focus:border-red-600 focus:ring-1 focus:ring-red-600 text-zinc-100 placeholder-zinc-750 text-sm rounded px-3 py-2.5 pl-10 focus:outline-none transition-all font-mono tracking-widest uppercase"
+                    disabled={loading || !otpSent}
+                    required
+                  />
+                </div>
+                {devOtp && (
+                  <div className="text-[10px] mt-1.5 text-zinc-500 font-mono tracking-wider">
+                    TESTING MODE // SIMULATED KEY: <span className="text-red-400 font-bold font-mono bg-red-950/20 px-2 py-0.5 rounded border border-red-950/30">{devOtp}</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div>
               <label className="block text-xs uppercase tracking-widest text-zinc-400 font-share-tech mb-2">

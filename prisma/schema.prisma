@@ -40,3 +40,14 @@ model LevelProgress {
 
   @@unique([userId, level])
 }
+
+model OtpRecord {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  email     String   @unique
+  otp       String
+  sentCount Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+

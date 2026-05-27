@@ -34,7 +34,7 @@ interface RegisterUserPayload {
 interface GameContextType {
   state: GameState;
   login: (email: string, passwordString: string) => Promise<{ success: boolean; message: string }>;
-  register: (username: string, email: string, passwordString: string) => Promise<{ success: boolean; message: string }>;
+  register: (username: string, email: string, passwordString: string, otp: string) => Promise<{ success: boolean; message: string }>;
   logout: () => void;
   submitAnswer: (answer: string) => { success: boolean; message: string; isLevelComplete: boolean };
   exitLevelToDashboard: () => void;
@@ -188,12 +188,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [isInitialized, state.isLoggedIn, pathname, router]);
 
   // Custom Registration Logic with Offline local registry fallback
-  const register = async (username: string, email: string, passwordString: string): Promise<{ success: boolean; message: string }> => {
+  const register = async (username: string, email: string, passwordString: string, otp: string): Promise<{ success: boolean; message: string }> => {
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password: passwordString }),
+        body: JSON.stringify({ username, email, password: passwordString, otp }),
       });
 
       const data = await response.json();

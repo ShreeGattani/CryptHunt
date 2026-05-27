@@ -17,11 +17,11 @@ function getPrismaClient() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { username, email, password } = body;
+    const { username, email, password, otp } = body;
 
-    if (!username || !email || !password) {
+    if (!username || !email || !password || !otp) {
       return NextResponse.json(
-        { success: false, message: "Username, email, and password must be supplied." },
+        { success: false, message: "Alias, email, password, and decryption OTP must be supplied." },
         { status: 400 }
       );
     }
@@ -30,9 +30,39 @@ export async function POST(request: Request) {
 
     if (prisma) {
       try {
-        // Check if email already registered
+        const normalizedEmail = email.trim().toLowerCase();
+
+        // 1. Verify OTP record
+        const otpRecord = await prisma.otpRecord.findUnique({
+          where: { email: normalizedEmail }
+        });
+
+        if (!otpRecord) {
+          return NextResponse.json(
+            { success: false, message: "NO OTP HANDSHAKE INITIATED FOR THIS EMAIL ADDRESS." },
+            { status: 400 }
+          );
+        }
+
+        // 2. Check expiration
+        if (new Date() > otpRecord.expiresAt) {
+          return NextResponse.json(
+            { success: false, message: "DECRYPTION KEY HAS EXPIRED. PLEASE RE-SEND OTP." },
+            { status: 400 }
+          );
+        }
+
+        // 3. Verify value match
+        if (otpRecord.otp !== otp.trim()) {
+          return NextResponse.json(
+            { success: false, message: "INVALID DECRYPTION KEY. COGNITIVE HANDSHAKE ABORTED." },
+            { status: 400 }
+          );
+        }
+
+        // 4. Check if email already registered
         const existingEmail = await prisma.user.findUnique({
-          where: { email }
+          where: { email: normalizedEmail }
         });
         if (existingEmail) {
           return NextResponse.json(
@@ -41,7 +71,7 @@ export async function POST(request: Request) {
           );
         }
 
-        // Check if username already registered
+        // 5. Check if username already registered
         const existingUsername = await prisma.user.findUnique({
           where: { username }
         });
@@ -52,13 +82,18 @@ export async function POST(request: Request) {
           );
         }
 
+        // Delete the verified OTP record so it can't be re-used
+        await prisma.otpRecord.delete({
+          where: { email: normalizedEmail }
+        });
+
         const sessionToken = Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
         
         // Register user
         const user = await prisma.user.create({
           data: {
             username,
-            email,
+            email: normalizedEmail,
             password, // Storing simple string for started project
             sessionToken
           }
@@ -77,7 +112,8 @@ export async function POST(request: Request) {
           }
         });
       } catch (dbError: any) {
-        console.warn("MySQL Offline: Falling back to local verification system.", dbError.message);
+        console.warn("Database Offline: Falling back to local verification system.", dbError.message);
+
         return NextResponse.json({
           success: true,
           message: "Database connection offline. Enabling Local Storage fallback validation.",
