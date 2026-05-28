@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import nodemailer from "nodemailer";
 
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : "Unknown error";
+
 // Lazy Graceful Prisma Client instantiation
 function getPrismaClient() {
   try {
@@ -137,9 +140,9 @@ export async function POST(request: Request) {
           });
 
           emailSent = true;
-        } catch (e: any) {
+        } catch (e: unknown) {
           console.error("Nodemailer failed to dispatch OTP email:", e);
-          emailError = e.message;
+          emailError = getErrorMessage(e);
         }
       } else {
         console.log(`[GMAIL SMTP NOT CONFIGURED] Generated OTP for ${normalizedEmail}: ${otp}`);
@@ -159,16 +162,16 @@ export async function POST(request: Request) {
         debugError: emailError ? emailError : undefined,
       });
 
-    } catch (dbError: any) {
+    } catch (dbError: unknown) {
       console.error("Database OTP operation failed:", dbError);
       return NextResponse.json(
         { success: false, message: "Registry error: Failed to record verification sequence." },
         { status: 500 }
       );
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { success: false, message: "Internal server registry error.", error: error.message },
+      { success: false, message: "Internal server registry error.", error: getErrorMessage(error) },
       { status: 500 }
     );
   }

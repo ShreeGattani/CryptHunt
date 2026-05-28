@@ -2,13 +2,10 @@
 
 import React, { useState, useEffect, use } from "react";
 import { useGame } from "../../context/GameContext";
-import { creepypastaLevels } from "../../data/questions";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Skull,
   ChevronLeft,
-  Timer,
   HelpCircle,
   AlertOctagon,
   Unlock,
@@ -17,6 +14,7 @@ import {
   Eye,
   AudioLines
 } from "lucide-react";
+import { clueLocations } from "../../data/resources";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -29,7 +27,6 @@ export default function LevelPage({ params }: PageProps) {
     state,
     submitAnswer,
     exitLevelToDashboard,
-    formatTime,
     currentLevelData
   } = useGame();
 
@@ -100,6 +97,7 @@ export default function LevelPage({ params }: PageProps) {
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-950 text-zinc-100 font-mono relative pb-12">
+      <div className="absolute inset-0 cryptatrix-noise opacity-50 pointer-events-none"></div>
       {/* Dynamic Cyber Grid styled per level */}
       <div className={`absolute inset-0 bg-[linear-gradient(to_right,#18181b_1px,transparent_1px),linear-gradient(to_bottom,#18181b_1px,transparent_1px)] bg-[size:3rem_3rem] pointer-events-none`}></div>
 
@@ -204,6 +202,22 @@ export default function LevelPage({ params }: PageProps) {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+
+            <div className="bg-black/70 px-6 py-3 border-b border-zinc-800/60">
+              <p className="text-[10px] text-zinc-500 font-share-tech uppercase tracking-widest mb-2">
+                Inspection checklist
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {clueLocations.slice(1, 6).map((location) => (
+                  <span
+                    key={location}
+                    className="border border-zinc-800 bg-zinc-950/70 rounded px-2 py-1 text-[10px] text-zinc-400"
+                  >
+                    {location}
+                  </span>
+                ))}
               </div>
             </div>
 

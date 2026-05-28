@@ -3,8 +3,8 @@ import { GameProvider } from "./context/GameContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Crypthunt // Creepypasta Digital Labyrinth",
-  description: "A cryptographic digital treasure hunt through five dark levels of internet folklore. Face Slender Man, Eyeless Jack, Ben Drowned, Puppeteer, and Candle Cove.",
+  title: "Crypt@trix // Creepypasta Cipher Hunt",
+  description: "A cryptographic digital treasure hunt where clues hide in pages, source, files, backlinks, and static-soaked horror screens.",
 };
 
 export default function RootLayout({

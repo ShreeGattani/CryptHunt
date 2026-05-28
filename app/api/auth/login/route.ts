@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : "Unknown error";
+
 // Lazy Graceful Prisma Client instantiation
 function getPrismaClient() {
   try {
@@ -61,8 +64,8 @@ export async function POST(request: Request) {
             sessionToken
           }
         });
-      } catch (dbError: any) {
-        console.warn("MySQL Offline: Falling back to local verification system.", dbError.message);
+      } catch (dbError: unknown) {
+        console.warn("MySQL Offline: Falling back to local verification system.", getErrorMessage(dbError));
         return NextResponse.json({
           success: true,
           message: "Database connection offline. Enabling Local Storage fallback validation.",
@@ -78,9 +81,9 @@ export async function POST(request: Request) {
         credentialsCheck: { email, password }
       });
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { success: false, message: "Internal server authentication error.", error: error.message },
+      { success: false, message: "Internal server authentication error.", error: getErrorMessage(error) },
       { status: 500 }
     );
   }

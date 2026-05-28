@@ -73,7 +73,7 @@ export async function GET(request: Request) {
         updatedAt: user.updatedAt.toISOString(),
       } : null,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Database sync fetch error:", error);
     return NextResponse.json({
       success: true,
@@ -136,7 +136,7 @@ export async function POST(request: Request) {
       sessionActive: true,
       message: "Game state synchronized successfully."
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Database sync post error:", error);
     return NextResponse.json({
       success: true,

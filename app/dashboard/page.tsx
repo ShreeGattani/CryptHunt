@@ -7,19 +7,18 @@ import Link from "next/link";
 import {
   Trophy,
   BookOpen,
-  Timer,
   Lock,
   Skull,
   CheckCircle2,
   AlertCircle,
   Play,
-  RotateCcw,
   Sparkles,
   LogOut
 } from "lucide-react";
+import { clueLocations, requiredSoftware, sampleHuntNotes, solverTools } from "../data/resources";
 
 export default function DashboardPage() {
-  const { state, logout, resetGame, formatTime, formatDate } = useGame();
+  const { state, logout, resetGame, formatDate } = useGame();
   const [isRulesOpen, setIsRulesOpen] = useState(false);
 
   // If not logged in, state effect in Context redirects, show null fallback
@@ -29,6 +28,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-950 text-zinc-100 font-mono relative pb-12">
+      <div className="absolute inset-0 cryptatrix-noise opacity-60 pointer-events-none"></div>
       {/* Background Cyber Grid */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#18181b_1px,transparent_1px),linear-gradient(to_bottom,#18181b_1px,transparent_1px)] bg-[size:3rem_3rem] pointer-events-none"></div>
 
@@ -37,7 +37,7 @@ export default function DashboardPage() {
         <div className="flex items-center space-x-3">
           <Skull className="w-6 h-6 text-red-500 animate-pulse" />
           <Link href="/dashboard" className="text-xl font-bold font-orbitron text-red-500 tracking-wider hover:text-red-400 transition-colors">
-            CRYPTHUNT
+            CRYPT@TRIX
           </Link>
         </div>
 
@@ -93,7 +93,7 @@ export default function DashboardPage() {
         <div className="mb-8 flex flex-col md:flex-row items-center justify-between p-4 bg-red-950/10 border border-red-950/50 rounded gap-4">
           <div className="flex items-center space-x-3 text-xs text-red-400 font-mono">
             <AlertCircle className="w-4 h-4 flex-shrink-0 animate-bounce" />
-            <span>[SESSION LOGGED] Acknowledge: Internet legends materialize in this domain. Complete each decryption in sequential order.</span>
+            <span>[SESSION LOGGED] Inspect pages, titles, source comments, files, and backlinks before submitting each key.</span>
           </div>
 
           {/* Hunt Active Status HUD */}
@@ -157,8 +157,6 @@ export default function DashboardPage() {
           {creepypastaLevels.map((level) => {
             const isCompleted = state.currentLevel > level.id;
             const isActive = state.currentLevel === level.id;
-            const isLocked = state.currentLevel < level.id;
-
             return (
               <div
                 key={level.id}
@@ -241,12 +239,12 @@ export default function DashboardPage() {
       {/* Spooky Rule Book Modal Overlay */}
       {isRulesOpen && (
         <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="w-full max-w-2xl bg-zinc-900 border-2 border-red-900 rounded shadow-2xl overflow-hidden pulse-red-glow font-mono">
+          <div className="w-full max-w-3xl bg-zinc-900 border-2 border-red-900 rounded shadow-2xl overflow-hidden pulse-red-glow font-mono">
             {/* Header */}
             <div className="flex items-center justify-between bg-zinc-950 px-4 py-3 border-b border-red-900">
               <span className="text-xs font-bold text-red-500 tracking-widest font-orbitron flex items-center space-x-2">
                 <BookOpen className="w-4 h-4 text-red-500" />
-                <span>LABYRINTH PROTOCOLS // RULE BOOK</span>
+                <span>CRYPT@TRIX PROTOCOLS // RESOURCE BOOK</span>
               </span>
               <button
                 onClick={() => setIsRulesOpen(false)}
@@ -260,38 +258,69 @@ export default function DashboardPage() {
             <div className="p-6 md:p-8 space-y-6 max-h-[70vh] overflow-y-auto text-sm text-zinc-300 leading-relaxed border-b border-zinc-800">
               <div className="space-y-2 border-l-2 border-red-600 pl-4 bg-red-950/5 p-3 rounded">
                 <h4 className="text-red-500 font-orbitron font-bold text-xs uppercase tracking-widest">
-                  1. Cognitive Decryption Rules
+                  1. Hunt Rules
                 </h4>
                 <p className="text-xs text-zinc-400">
-                  Each entity hosts 6 progressive locks. Entering the correct decryption key unlocks the subsequent gate immediately.
+                  Each entity hosts 6 progressive locks. Entering the correct key unlocks the next gate. Inputs are case-insensitive, but filenames, punctuation, and spacing may matter when a clue explicitly asks for them.
                 </p>
               </div>
 
               <div className="space-y-2 border-l-2 border-cyan-600 pl-4 bg-cyan-950/5 p-3 rounded">
                 <h4 className="text-cyan-400 font-orbitron font-bold text-xs uppercase tracking-widest">
-                  2. Level Exit Safeguards
+                  2. Where Clues Can Hide
                 </h4>
-                <p className="text-xs text-zinc-400">
-                  Once a level's 6th key is registered, your consciousness is ejected back to this Directory. The next folklore port will unlock.
-                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {clueLocations.map((location) => (
+                    <div key={location} className="text-xs text-zinc-400 border border-zinc-800 bg-black/30 p-2 rounded">
+                      {location}
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div className="space-y-2 border-l-2 border-yellow-600 pl-4 bg-yellow-950/5 p-3 rounded">
                 <h4 className="text-yellow-500 font-orbitron font-bold text-xs uppercase tracking-widest">
-                  3. Session Run Timer
+                  3. Solver Toolkit
                 </h4>
-                <p className="text-xs text-zinc-400">
-                  A persistent cyber clock clocks your intrusion duration. Fastest decryption tallies secure top priority in the global rankings matrix.
-                </p>
+                <div className="flex flex-wrap gap-2">
+                  {solverTools.map((tool) => (
+                    <a
+                      key={tool.href}
+                      href={tool.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-[10px] uppercase tracking-wider border border-yellow-700/50 bg-yellow-950/10 px-2 py-1 rounded text-yellow-400 hover:text-yellow-300 hover:border-yellow-500"
+                    >
+                      {tool.label}
+                    </a>
+                  ))}
+                </div>
               </div>
 
               <div className="space-y-2 border-l-2 border-zinc-600 pl-4 bg-zinc-950/5 p-3 rounded">
                 <h4 className="text-zinc-500 font-orbitron font-bold text-xs uppercase tracking-widest">
-                  4. Decryption Integrity
+                  4. Software Required
                 </h4>
-                <p className="text-xs text-zinc-400">
-                  Case insensitivity applies to all submissions. Clean inputs, remove extra whitespace. Use hints if anomalous blocks stall your decryption process.
-                </p>
+                <div className="grid gap-2">
+                  {requiredSoftware.map((item) => (
+                    <div key={item} className="text-xs text-zinc-400 border border-zinc-800 bg-black/30 p-2 rounded">
+                      {item}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-3 border-l-2 border-purple-600 pl-4 bg-purple-950/5 p-3 rounded">
+                <h4 className="text-purple-300 font-orbitron font-bold text-xs uppercase tracking-widest">
+                  5. Old Hunt Pattern Notes
+                </h4>
+                {sampleHuntNotes.map((note) => (
+                  <div key={note.answer} className="text-xs text-zinc-400 border border-zinc-800 bg-black/30 p-3 rounded">
+                    <p className="text-zinc-300">{note.prompt}</p>
+                    <p className="mt-1 text-emerald-400">Answer pattern: {note.answer}</p>
+                    <p className="mt-1 text-zinc-500">{note.method}</p>
+                  </div>
+                ))}
               </div>
             </div>
 
