@@ -15,13 +15,13 @@ export default function BenPage() {
     let current =
       Number(localStorage.getItem("ben-bg")) || 1;
 
-    const next = current + 1 > totalImages
-      ? 1
-      : current + 1;
+      const next = current + 1 > totalImages
+        ? 1
+        : current + 1;
 
-    setBgImage(`/images/ben/ben${current}.png`);
+      setBgImage(`/images/ben/ben${current}.png`);
 
-    localStorage.setItem("ben-bg", String(next));
+      localStorage.setItem("ben-bg", String(next));
   }, []);
 
 
@@ -31,8 +31,7 @@ export default function BenPage() {
     currentLevelData,
   } = useGame();
 
-  state.currentLevel = 3;
-
+    state.currentLevel = 3;
 
     const [inputAnswer, setInputAnswer] = useState("");
     const [feedback, setFeedback] = useState<{
