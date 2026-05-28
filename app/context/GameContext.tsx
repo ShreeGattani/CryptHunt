@@ -62,27 +62,27 @@ const defaultState: GameState = {
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [state, setState] = useState<GameState>(defaultState);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [state, setState] = useState<GameState>(() => {
+    if (typeof window === "undefined") return defaultState;
+
+    const saved = window.localStorage.getItem("crypthunt_session");
+    if (!saved) return defaultState;
+
+    try {
+      return JSON.parse(saved) as GameState;
+    } catch (error) {
+      console.error("Failed to parse game session", error);
+      return defaultState;
+    }
+  });
+  const [isInitialized] = useState(true);
   const stateRef = useRef<GameState>(state);
-  stateRef.current = state;
   const router = useRouter();
   const pathname = usePathname();
 
-  // Load active session from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem("crypthunt_session");
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setState(parsed);
-      } catch (e) {
-        console.error("Failed to parse game session", e);
-      }
-    }
-    setIsInitialized(true);
-  }, []);
+    stateRef.current = state;
+  }, [state]);
 
   // Sync active session to localStorage
   useEffect(() => {
@@ -174,7 +174,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, 10000); // Poll and push every 10 seconds for real-time multi-browser response!
 
     return () => clearInterval(syncInterval);
-  }, [state.isLoggedIn, isInitialized]);
+  }, [state.isLoggedIn, isInitialized, router]);
 
   // Security gate redirects
   useEffect(() => {
@@ -249,7 +249,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setState(newState);
       router.push("/dashboard");
       return { success: true, message: "Registration decrypted. Gateway unlocked." };
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Registry fetch error, defaulting locally", err);
       return { success: false, message: "CONNECTION TIMED OUT. BOOT GRID ANOMALY." };
     }
@@ -315,7 +315,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setState(newState);
       router.push("/dashboard");
       return { success: true, message: "Decryption verified. Portal unlocked." };
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Login fetch error", err);
       return { success: false, message: "CONNECTION TIMED OUT. CHECK SERVER PROTOCOLS." };
     }
@@ -505,7 +505,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       hours = hours % 12;
       hours = hours ? hours : 12; // the hour '0' should be '12'
       return `${day} ${month}, ${hours.toString().padStart(2, "0")}:${minutes}:${seconds} ${ampm}`;
-    } catch (e) {
+    } catch {
       return dateStr;
     }
   };

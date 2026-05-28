@@ -1,33 +1,15 @@
 "use client";
 
-import Image from "next/image";
-import React, { useState, useEffect, use } from "react";
+import React, { useState } from "react";
 import { useGame } from "../../context/GameContext";
-import { useRouter } from "next/navigation";
 import "./puppet.css";
 
 export default function PuppeteerPage() {
-  const [bgImage, setBgImage] = useState("/images/puppeteer/puppet1.png");
-
-  useEffect(() => {
-  const totalImages = 5;
-
-  let current =
-    Number(localStorage.getItem("puppet-bg")) || 1;
-
-  const next = current + 1 > totalImages
-    ? 1
-    : current + 1;
-
-  setBgImage(`/images/puppeteer/puppet${current}.png`);
-
-  localStorage.setItem("puppet-bg", String(next));
-}, []);
-
   const {
     state,
     submitAnswer,
     currentLevelData,
+    exitLevelToDashboard,
   } = useGame();
 
   const [inputAnswer, setInputAnswer] = useState("");
@@ -35,7 +17,7 @@ export default function PuppeteerPage() {
     success: boolean;
     message: string;
   } | null>(null);
-
+  const [levelCompleteGate, setLevelCompleteGate] = useState(false);
 
   if (
     !state.isLoggedIn ||
@@ -49,7 +31,6 @@ export default function PuppeteerPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     setFeedback(null);
 
     if (!inputAnswer.trim()) {
@@ -69,6 +50,9 @@ export default function PuppeteerPage() {
       });
 
       setInputAnswer("");
+      if (res.isLevelComplete) {
+        setLevelCompleteGate(true);
+      }
     } else {
       setFeedback({
         success: false,
@@ -77,76 +61,78 @@ export default function PuppeteerPage() {
     }
   };
 
-
   return (
-    <div
-  className="puppeteer-container"
-  style={{
-    backgroundImage: `url(${bgImage})`,
-  }}
->
+    <div className="puppeteer-container">
+      <div className="puppet-stage-glow"></div>
+      <div className="puppet-string string-one"></div>
+      <div className="puppet-string string-two"></div>
+      <div className="puppet-string string-three"></div>
 
-  <div className="puppeteer-content vcr-font">
-
-    {/* TITLE */}
-    <div className="title-section">
-      <h1>LEVEL: THE PUPPETEER</h1>
-
-      <Image src="/images/divider.png" alt="divider" width={400} height={40} className="divider-img"></Image>
-    </div>
-
-    {/* QUESTION */}
-    <p className="cipher-text vcr-font">
-      {activeQuestion.text}
-    </p>
-
-    {/* ANSWER */}
-    <div className="answer-section vcr-font">
-
-      <div className="answer-header">
-        <Image src="/images/small-left.png" alt="divider" width={120} height={20} className="mini-divider-img"/>
-
-        <span>ENTER YOUR ANSWER</span>
-
-        <Image src="/images/small-right.png" alt="divider" width={120} height={20} className="mini-divider-img reverse"/>
-
-      </div>
-
-      <form
-        onSubmit={handleSubmit}
-        className="answer-form"
-      >
-        <input
-          type="text"
-          value={inputAnswer}
-          onChange={(e) =>
-            setInputAnswer(e.target.value)
-          }
-          placeholder="Type your answer here [no spaces]..."
-          className="answer-input vcr-font"
-        />
-
-        <button
-          type="submit"
-          className="submit-btn vcr-font"
-        >
-          SUBMIT
-        </button>
-      </form>
-
-      {feedback && (
-        <div
-          className={`feedback ${
-            feedback.success
-              ? "success"
-              : "error"
-          }`}
-        >
-          {feedback.message}
+      <div className="puppeteer-content vcr-font">
+        <div className="title-section">
+          <p>CRYPT@TRIX LEVEL 04</p>
+          <h1>THE PUPPETEER</h1>
+          <div className="divider-line"></div>
         </div>
-      )}
+
+        {levelCompleteGate ? (
+          <div className="completion-card">
+            <h2>STRINGS SEVERED</h2>
+            <p>All Puppeteer keys have been injected. Exit the theatre and return to the directory.</p>
+            <button type="button" onClick={exitLevelToDashboard} className="submit-btn vcr-font">
+              EXIT TO DIRECTORY
+            </button>
+          </div>
+        ) : (
+          <>
+            <p className="cipher-text vcr-font">
+              {activeQuestion.text}
+            </p>
+
+            <div className="answer-section vcr-font">
+              <div className="answer-header">
+                <span></span>
+                <strong>ENTER YOUR ANSWER</strong>
+                <span></span>
+              </div>
+
+              <form
+                onSubmit={handleSubmit}
+                className="answer-form"
+              >
+                <input
+                  type="text"
+                  value={inputAnswer}
+                  onChange={(e) =>
+                    setInputAnswer(e.target.value)
+                  }
+                  placeholder="Type your answer here [no spaces]..."
+                  className="answer-input vcr-font"
+                />
+
+                <button
+                  type="submit"
+                  className="submit-btn vcr-font"
+                >
+                  SUBMIT
+                </button>
+              </form>
+
+              {feedback && (
+                <div
+                  className={`feedback ${
+                    feedback.success
+                      ? "success"
+                      : "error"
+                  }`}
+                >
+                  {feedback.message}
+                </div>
+              )}
+            </div>
+          </>
+        )}
+      </div>
     </div>
-  </div>
-</div>
   );
 }

@@ -1,0 +1,10 @@
+diff a/app/page.tsx b/app/page.tsx	(rejected hunks)
+@@ -64,7 +65,7 @@ export default function LoginPage() {
+           `[DISPATCH FAILED: ${data.message?.toUpperCase() || "ERROR"}]`
+         ]);
+       }
+-    } catch (err: any) {
++    } catch (err: unknown) {
+       console.error(err);
+       setError("TRANSMISSION ERROR. CONNECTION INTERFERENCE.");
+     } finally {

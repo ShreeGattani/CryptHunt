@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : "Unknown error";
+
 // Lazy Graceful Prisma Client instantiation
 function getPrismaClient() {
   try {
@@ -83,10 +86,10 @@ export async function POST(request: Request) {
             currentLevel: user.currentLevel,
           },
         });
-      } catch (dbError: any) {
+      } catch (dbError: unknown) {
         console.warn(
           "MySQL connection offline or schema not migrated yet. Falling back to local state.",
-          dbError.message
+          getErrorMessage(dbError)
         );
         return NextResponse.json({
           success: true,
@@ -103,9 +106,9 @@ export async function POST(request: Request) {
         data: { username, email, score, completedLevel, elapsedTime },
       });
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { success: false, message: "Internal server error parsing request payload.", error: error.message },
+      { success: false, message: "Internal server error parsing request payload.", error: getErrorMessage(error) },
       { status: 500 }
     );
   }
@@ -145,8 +148,8 @@ export async function GET() {
           databaseStatus: "CONNECTED",
           data: entries
         });
-      } catch (dbError: any) {
-        console.warn("MySQL connection offline fetching leaderboard", dbError.message);
+      } catch (dbError: unknown) {
+        console.warn("MySQL connection offline fetching leaderboard", getErrorMessage(dbError));
         return NextResponse.json({
           success: true,
           databaseStatus: "OFFLINE_FALLBACK",
@@ -160,9 +163,9 @@ export async function GET() {
         data: []
       });
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { success: false, message: "Internal server error fetching scores.", error: error.message },
+      { success: false, message: "Internal server error fetching scores.", error: getErrorMessage(error) },
       { status: 500 }
     );
   }

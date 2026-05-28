@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : "Unknown error";
+
 // Lazy Graceful Prisma Client instantiation
 function getPrismaClient() {
   try {
@@ -93,9 +96,9 @@ export async function POST(request: Request) {
         user: { username, email, score: 0, currentLevel: 1 }
       });
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
     return NextResponse.json(
-      { success: false, message: "Internal server registry error.", error: error.message },
+      { success: false, message: "Internal server registry error.", error: getErrorMessage(error) },
       { status: 500 }
     );
   }

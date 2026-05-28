@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { useGame } from "../context/GameContext";
 import Link from "next/link";
-import { ChevronLeft, Trophy, Skull, Timer, Award } from "lucide-react";
+import { ChevronLeft, Trophy, Skull, Award } from "lucide-react";
 
 interface LeaderboardEntry {
   username: string;
@@ -12,6 +12,14 @@ interface LeaderboardEntry {
   completedLevels: number;
   updatedAt: string;
   isCurrentUser?: boolean;
+}
+
+interface LocalUserRecord {
+  username: string;
+  email: string;
+  score: number;
+  currentLevel: number;
+  updatedAt?: string;
 }
 
 const mockHackers: LeaderboardEntry[] = [
@@ -58,7 +66,7 @@ export default function LeaderboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
-  const fetchLeaderboard = async (showLoading = false) => {
+  const fetchLeaderboard = useCallback(async (showLoading = false) => {
     if (showLoading) setIsLoading(true);
     let entries: LeaderboardEntry[] = [];
     let usingDb = false;
@@ -80,8 +88,8 @@ export default function LeaderboardPage() {
       try {
         const localUsersRaw = localStorage.getItem("crypthunt_local_users");
         if (localUsersRaw) {
-          const localUsers = JSON.parse(localUsersRaw);
-          entries = localUsers.map((u: any) => ({
+          const localUsers = JSON.parse(localUsersRaw) as LocalUserRecord[];
+          entries = localUsers.map((u) => ({
             username: u.username,
             email: u.email,
             score: u.score,
@@ -147,21 +155,27 @@ export default function LeaderboardPage() {
     setBoardData(sorted);
     setLastUpdated(new Date());
     setIsLoading(false);
-  };
+  }, [state.currentLevel, state.email, state.isLoggedIn, state.score, state.updatedAt, state.username]);
 
   useEffect(() => {
-    fetchLeaderboard(true);
+    const initialLoad = window.setTimeout(() => {
+      void fetchLeaderboard(true);
+    }, 0);
 
     // Auto-update the leaderboard every 10 minutes
-    const interval = setInterval(() => {
-      fetchLeaderboard(false);
+    const interval = window.setInterval(() => {
+      void fetchLeaderboard(false);
     }, 10 * 60 * 1000);
 
-    return () => clearInterval(interval);
-  }, [state.isLoggedIn, state.username, state.email, state.score, state.currentLevel]);
+    return () => {
+      window.clearTimeout(initialLoad);
+      window.clearInterval(interval);
+    };
+  }, [fetchLeaderboard]);
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-950 text-zinc-100 font-mono relative pb-12">
+      <div className="absolute inset-0 cryptatrix-noise opacity-50 pointer-events-none"></div>
       {/* Background Cyber Grid */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#18181b_1px,transparent_1px),linear-gradient(to_bottom,#18181b_1px,transparent_1px)] bg-[size:3rem_3rem] pointer-events-none"></div>
 
@@ -177,7 +191,7 @@ export default function LeaderboardPage() {
 
         <div className="flex items-center space-x-3 text-red-500 font-orbitron font-bold tracking-widest text-sm">
           <Skull className="w-5 h-5 text-red-600 animate-pulse" />
-          <span className="font-orbitron">LEADERBOARD MATRIX</span>
+          <span className="font-orbitron">CRYPT@TRIX LEADERBOARD</span>
         </div>
 
         <div className="flex items-center space-x-2 text-[10px] text-zinc-500 font-share-tech">

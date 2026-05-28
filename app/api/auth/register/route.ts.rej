@@ -1,0 +1,12 @@
+diff a/app/api/auth/register/route.ts b/app/api/auth/register/route.ts	(rejected hunks)
+@@ -111,8 +114,8 @@ export async function POST(request: Request) {
+             sessionToken
+           }
+         });
+-      } catch (dbError: any) {
+-        console.warn("Database Offline: Falling back to local verification system.", dbError.message);
++      } catch (dbError: unknown) {
++        console.warn("Database Offline: Falling back to local verification system.", getErrorMessage(dbError));
+ 
+         return NextResponse.json({
+           success: true,
