@@ -9,8 +9,9 @@ export interface Question {
 export interface LevelData {
   id: number;
   name: string;
+  cover: string;
   theme: string;
-  description: string;
+  //description: string;
   bgColor: string;
   textColor: string;
   borderColor: string;
@@ -23,8 +24,9 @@ export const creepypastaLevels: LevelData[] = [
   {
     id: 1,
     name: "Slender Man",
+    cover: "/images/covers/slenderman.png",
     theme: "The Whispering Woods",
-    description: "You stand inside a pixelated dark forest. The static on your CRT monitor is rising. A tall, faceless figure in a dark suit watches you from between the pine trees. Collect the pages and escape.",
+    //description: "You stand inside a pixelated dark forest. The static on your CRT monitor is rising. A tall, faceless figure in a dark suit watches you from between the pine trees. Collect the pages and escape.",
     bgColor: "bg-emerald-950/20",
     textColor: "text-emerald-400",
     borderColor: "border-emerald-500/30",
@@ -78,8 +80,9 @@ export const creepypastaLevels: LevelData[] = [
   {
     id: 2,
     name: "Eyeless Jack",
+    cover: "/images/covers/jack.png",
     theme: "The Operating Theatre",
-    description: "The metallic smell of blood fills the room. A creature wearing a blue, eye-hollowed mask stands over your bed. You feel a sharp incision. Jack wants a surgical prize.",
+    //description: "The metallic smell of blood fills the room. A creature wearing a blue, eye-hollowed mask stands over your bed. You feel a sharp incision. Jack wants a surgical prize.",
     bgColor: "bg-blue-950/20",
     textColor: "text-blue-400",
     borderColor: "border-blue-500/30",
@@ -133,8 +136,9 @@ export const creepypastaLevels: LevelData[] = [
   {
     id: 3,
     name: "Ben Drowned",
+    cover: "/images/covers/ben.png",
     theme: "The Haunted Cartridge",
-    description: "You shouldn't have done that. The statue of Elegy of Emptiness is behind you, smiling. The water is rising. The N64 code is glitched and Ben is speaking through the screen.",
+    //description: "You shouldn't have done that. The statue of Elegy of Emptiness is behind you, smiling. The water is rising. The N64 code is glitched and Ben is speaking through the screen.",
     bgColor: "bg-red-950/20",
     textColor: "text-red-400",
     borderColor: "border-red-500/30",
@@ -188,8 +192,9 @@ export const creepypastaLevels: LevelData[] = [
   {
     id: 4,
     name: "The Puppeteer",
+    cover: "/images/covers/puppeteer.png",
     theme: "The Theater of Shadows",
-    description: "Golden strings hang from the ceiling. A gray skin entity with glowing golden eyes watches you from the catwalk. You are just a marionette. Will you break free, or dance?",
+    //description: "Golden strings hang from the ceiling. A gray skin entity with glowing golden eyes watches you from the catwalk. You are just a marionette. Will you break free, or dance?",
     bgColor: "bg-purple-950/20",
     textColor: "text-purple-400",
     borderColor: "border-purple-500/30",
@@ -243,8 +248,9 @@ export const creepypastaLevels: LevelData[] = [
   {
     id: 5,
     name: "Candle Cove",
+    cover: "/images/covers/candle.png",
     theme: "The Abandoned Broadcast",
-    description: "An old CRT television is displaying a vintage 1970s pirate puppet show. But there is no broadcast record. The Laughingstock is sailing. The Skin-Taker is grinding his jaw.",
+    //description: "An old CRT television is displaying a vintage 1970s pirate puppet show. But there is no broadcast record. The Laughingstock is sailing. The Skin-Taker is grinding his jaw.",
     bgColor: "bg-neutral-950/20",
     textColor: "text-neutral-400",
     borderColor: "border-neutral-500/30",
