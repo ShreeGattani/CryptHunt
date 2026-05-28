@@ -4,24 +4,26 @@ import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { useGame } from "../../context/GameContext";
 import "./ben.css";
+import { creepypastaLevels } from "@/app/data/questions";
 
 export default function BenPage() {
   const [bgImage, setBgImage] = useState("/images/ben/ben1.png");
 
   useEffect(() => {
-  const totalImages = 12;
+    const totalImages = 12;
 
-  let current =
-    Number(localStorage.getItem("ben-bg")) || 1;
+    let current =
+      Number(localStorage.getItem("ben-bg")) || 1;
 
-  const next = current + 1 > totalImages
-    ? 1
-    : current + 1;
+    const next = current + 1 > totalImages
+      ? 1
+      : current + 1;
 
-  setBgImage(`/images/ben/ben${current}.png`);
+    setBgImage(`/images/ben/ben${current}.png`);
 
-  localStorage.setItem("ben-bg", String(next));
-}, []);
+    localStorage.setItem("ben-bg", String(next));
+  }, []);
+
 
   const {
     state,
@@ -29,11 +31,14 @@ export default function BenPage() {
     currentLevelData,
   } = useGame();
 
-  const [inputAnswer, setInputAnswer] = useState("");
-  const [feedback, setFeedback] = useState<{
-    success: boolean;
-    message: string;
-  } | null>(null);
+  state.currentLevel = 3;
+
+
+    const [inputAnswer, setInputAnswer] = useState("");
+    const [feedback, setFeedback] = useState<{
+      success: boolean;
+      message: string;
+    } | null>(null);
 
 
   if (
