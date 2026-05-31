@@ -51,42 +51,112 @@ export default function LeaderboardPage() {
   const { state, formatDate } = useGame();
 
   const [boardData, setBoardData] = useState<LeaderboardEntry[]>([]);
-  const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [isLoading, setIsLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [isRulesOpen, setIsRulesOpen] = useState(false);
 
   console.log("boardData length:", boardData.length);
 
-  useEffect(() => {
-    let entries = [...mockHackers];
+  const fetchLeaderboard = async (showLoading = false) => {
+    if (showLoading) setIsLoading(true);
+    let entries: LeaderboardEntry[] = [];
+    let usingDb = false;
 
+    try {
+      const res = await fetch("/api/quiz");
+      const json = await res.json();
+      
+      if (res.ok && json.success && json.databaseStatus === "CONNECTED") {
+        entries = json.data || [];
+        usingDb = true;
+      }
+    } catch (e) {
+      console.warn("Failed fetching production leaderboard, using local fallbacks", e);
+    }
+
+    // If database is offline or returned fallback status, use local localStorage database
+    if (!usingDb) {
+      try {
+        const localUsersRaw = localStorage.getItem("crypthunt_local_users");
+        if (localUsersRaw) {
+          const localUsers = JSON.parse(localUsersRaw);
+          entries = localUsers.map((u: any) => ({
+            username: u.username,
+            email: u.email,
+            score: u.score,
+            completedLevels: u.currentLevel - 1,
+            updatedAt: u.updatedAt || new Date().toISOString()
+          }));
+        }
+      } catch (err) {
+        console.error("Failed to restore local user leaderboard", err);
+      }
+
+      // If no local users registered yet, seed the board with classic creepypasta mock hackers!
+      if (entries.length === 0) {
+        entries = [...mockHackers];
+      }
+    }
+
+    // Inject or update the active player's profile dynamically
     if (state.isLoggedIn) {
-      entries.push({
+      const completedLevels = Math.max(0, state.currentLevel - 1);
+      const userIndex = entries.findIndex(e => e.email.toLowerCase() === state.email.toLowerCase());
+      
+      const userEntry: LeaderboardEntry = {
         username: state.username,
         email: state.email,
         score: state.score,
-        completedLevels: Math.max(0, state.currentLevel - 1),
+        completedLevels,
         updatedAt: state.updatedAt || new Date().toISOString(),
-        isCurrentUser: true,
-      });
+        isCurrentUser: true
+      };
+
+      if (userIndex > -1) {
+        // Keep the best progress
+        const existing = entries[userIndex];
+        if (
+          userEntry.completedLevels > existing.completedLevels ||
+          (userEntry.completedLevels === existing.completedLevels && userEntry.score > existing.score) ||
+          (userEntry.completedLevels === existing.completedLevels && userEntry.score === existing.score && new Date(userEntry.updatedAt).getTime() < new Date(existing.updatedAt).getTime())
+        ) {
+          entries[userIndex] = userEntry;
+        } else {
+          entries[userIndex] = {
+            ...existing,
+            isCurrentUser: true
+          };
+        }
+      } else {
+        entries.push(userEntry);
+      }
     }
 
-    entries.sort((a, b) => {
+    // Order rankings correctly: highest levels first, then highest score, then earliest solve time
+    const sorted = entries.sort((a, b) => {
       if (b.completedLevels !== a.completedLevels) {
         return b.completedLevels - a.completedLevels;
       }
-
       if (b.score !== a.score) {
         return b.score - a.score;
       }
-
-      return (
-        new Date(a.updatedAt).getTime() -
-        new Date(b.updatedAt).getTime()
-      );
+      return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
     });
 
-    setBoardData(entries);
+    setBoardData(sorted);
     setLastUpdated(new Date());
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    fetchLeaderboard(true);
+
+    // Auto-update the leaderboard every 10 minutes
+    const interval = setInterval(() => {
+      fetchLeaderboard(false);
+    }, 10 * 60 * 1000);
+
+    return () => clearInterval(interval);
   }, [state]);
 
   return (
@@ -142,66 +212,80 @@ export default function LeaderboardPage() {
             </thead>
 
             <tbody>
-              {boardData.map((entry, index) => {
-                const rank = index + 1;
+              {isLoading ? (
+                <tr>
+                  <td colSpan={5} style={{ textAlign: "center", padding: "40px", color: "#8b8b8b", fontSize: "14px" }}>
+                    [ RETRIEVING LIVE COGNITIVE SIGNAL MATRIX... ]
+                  </td>
+                </tr>
+              ) : boardData.length === 0 ? (
+                <tr>
+                  <td colSpan={5} style={{ textAlign: "center", padding: "40px", color: "#ff3131", fontSize: "14px" }}>
+                    [ NO DATA RECOVERED ]
+                  </td>
+                </tr>
+              ) : (
+                boardData.map((entry, index) => {
+                  const rank = index + 1;
 
-                return (
-                  <tr
-                    key={index}
-                    className={
-                      entry.isCurrentUser
-                        ? "user-row"
-                        : ""
-                    }
-                  >
-                    <td className="rank">
-                      #{String(rank).padStart(2, "0")}
-                    </td>
+                  return (
+                    <tr
+                      key={index}
+                      className={
+                        entry.isCurrentUser
+                          ? "user-row"
+                          : ""
+                      }
+                    >
+                      <td className="rank">
+                        #{String(rank).padStart(2, "0")}
+                      </td>
 
-                    <td className="white">
-                      {entry.username}
-                    </td>
+                      <td className="white">
+                        {entry.username}
+                      </td>
 
-                    <td>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "16px",
-                          color: "#BBBBBB",
-                        }}
-                      >
-                        <span>
-                          {entry.completedLevels}/5
-                        </span>
+                      <td>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "16px",
+                            color: "#BBBBBB",
+                          }}
+                        >
+                          <span>
+                            {entry.completedLevels}/5
+                          </span>
 
-                        <div className="progress-bar">
-                          {[1, 2, 3, 4, 5].map((i) => (
-                            <div
-                              key={i}
-                              className={`progress-box ${
-                                i <= entry.completedLevels
-                                  ? entry.isCurrentUser
-                                    ? "filled red"
-                                    : "filled"
-                                  : ""
-                              }`}
-                            />
-                          ))}
+                          <div className="progress-bar">
+                            {[1, 2, 3, 4, 5].map((i) => (
+                              <div
+                                key={i}
+                                className={`progress-box ${
+                                  i <= entry.completedLevels
+                                    ? entry.isCurrentUser
+                                      ? "filled red"
+                                      : "filled"
+                                    : ""
+                                }`}
+                              />
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    </td>
+                      </td>
 
-                    <td className="score">
-                      {entry.score} PTS
-                    </td>
+                      <td className="score">
+                        {entry.score} PTS
+                      </td>
 
-                    <td className="white">
-                      {formatDate(entry.updatedAt)}
-                    </td>
-                  </tr>
-                );
-              })}
+                      <td className="white">
+                        {formatDate(entry.updatedAt)}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
 
