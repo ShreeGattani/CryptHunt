@@ -288,7 +288,17 @@ export default function DashboardPage() {
                   ) : (
 
                     <Link
-                      href={`/level/${level.id}`}
+                      href={`/level/${
+                        level.id === 1
+                          ? "slenderman"
+                          : level.id === 2
+                          ? "eyelessjack"
+                          : level.id === 3
+                          ? "ben"
+                          : level.id === 4
+                          ? "puppeteer"
+                          : "candlecove"
+                      }`}
                       className="enter-btn"
                     >
                       {isCompleted

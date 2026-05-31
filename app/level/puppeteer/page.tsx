@@ -1,13 +1,23 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import { useGame } from "../../context/GameContext";
 import { useRouter } from "next/navigation";
+import { creepypastaLevels } from "../../data/questions";
 import "./puppet.css";
+
+const levelData = creepypastaLevels.find((l) => l.id === 4)!;
 
 export default function PuppeteerPage() {
   const [bgImage, setBgImage] = useState("/images/puppeteer/puppet1.png");
+  const router = useRouter();
+
+  const {
+    state,
+    submitAnswer,
+    exitLevelToDashboard,
+  } = useGame();
 
   useEffect(() => {
   const totalImages = 5;
@@ -22,13 +32,7 @@ export default function PuppeteerPage() {
   setBgImage(`/images/puppeteer/puppet${current}.png`);
 
   localStorage.setItem("puppet-bg", String(next));
-}, []);
-
-  const {
-    state,
-    submitAnswer,
-    currentLevelData,
-  } = useGame();
+}, [state.currentQuestion]);
 
   const [inputAnswer, setInputAnswer] = useState("");
   const [feedback, setFeedback] = useState<{
@@ -36,16 +40,23 @@ export default function PuppeteerPage() {
     message: string;
   } | null>(null);
 
+  // Security Gate: Ensure user is logged in, and is active on this exact level
+  useEffect(() => {
+    if (state.isLoggedIn && state.currentLevel !== 4) {
+      router.push("/dashboard");
+    }
+  }, [state.isLoggedIn, state.currentLevel, router]);
 
-  if (
-    !state.isLoggedIn ||
-    !currentLevelData
-  ) {
+  if (!state.isLoggedIn || state.currentLevel !== 4) {
     return null;
   }
 
   const activeQuestion =
-    currentLevelData.questions[state.currentQuestion - 1];
+    levelData.questions[state.currentQuestion - 1];
+
+  if (!activeQuestion) {
+    return null;
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +80,12 @@ export default function PuppeteerPage() {
       });
 
       setInputAnswer("");
+
+      if (res.isLevelComplete) {
+        setTimeout(() => {
+          exitLevelToDashboard();
+        }, 1500);
+      }
     } else {
       setFeedback({
         success: false,

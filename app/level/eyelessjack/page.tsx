@@ -2,19 +2,23 @@
 
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useGame } from "../../context/GameContext";
+import { creepypastaLevels } from "../../data/questions";
 import "./eyelessjack.css";
 
 const TOTAL_IMAGES = 9;
+const levelData = creepypastaLevels.find((l) => l.id === 2)!;
 
 export default function EyelessJackPage() {
   const [bgIndex, setBgIndex] = useState(1);
   const [showHint, setShowHint] = useState(false);
+  const router = useRouter();
 
   const {
     state,
     submitAnswer,
-    currentLevelData,
+    exitLevelToDashboard,
   } = useGame();
 
   const [inputAnswer, setInputAnswer] = useState("");
@@ -24,7 +28,7 @@ export default function EyelessJackPage() {
     message: string;
   } | null>(null);
 
-  // Rotate background image on every reload
+  // Rotate background image on question change
   useEffect(() => {
     let current =
       Number(localStorage.getItem("jack-bg")) || 1;
@@ -37,22 +41,26 @@ export default function EyelessJackPage() {
         : current + 1;
 
     localStorage.setItem("jack-bg", String(next));
-  }, []);
+  }, [state.currentQuestion]);
 
   // Hide hint when question changes
   useEffect(() => {
     setShowHint(false);
   }, [state.currentQuestion]);
 
-  if (
-    !state.isLoggedIn ||
-    !currentLevelData
-  ) {
+  // Security Gate: Ensure user is logged in, and is active on this exact level
+  useEffect(() => {
+    if (state.isLoggedIn && state.currentLevel !== 2) {
+      router.push("/dashboard");
+    }
+  }, [state.isLoggedIn, state.currentLevel, router]);
+
+  if (!state.isLoggedIn || state.currentLevel !== 2) {
     return null;
   }
 
   const activeQuestion =
-    currentLevelData.questions[
+    levelData.questions[
       state.currentQuestion - 1
     ];
 
@@ -92,7 +100,7 @@ export default function EyelessJackPage() {
       // Exit after level complete
       if (res.isLevelComplete) {
         setTimeout(() => {
-          window.location.href = "/";
+          exitLevelToDashboard();
         }, 1500);
       }
     } else {

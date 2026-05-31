@@ -2,11 +2,22 @@
 
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useGame } from "../../context/GameContext";
+import { creepypastaLevels } from "../../data/questions";
 import "./slender.css";
+
+const levelData = creepypastaLevels.find((l) => l.id === 1)!;
 
 export default function SlendermanPage() {
     const [bgImage, setBgImage] = useState("/images/slenderman/man1.png");
+    const router = useRouter();
+
+    const {
+        state,
+        submitAnswer,
+        exitLevelToDashboard,
+    } = useGame();
 
     useEffect(() => {
         const totalImages = 7;
@@ -21,13 +32,7 @@ export default function SlendermanPage() {
         setBgImage(`/images/slenderman/man${current}.png`);
 
         localStorage.setItem("slender-bg", String(next));
-    }, []);
-
-    const {
-        state,
-        submitAnswer,
-        currentLevelData,
-    } = useGame();
+    }, [state.currentQuestion]);
 
     const [inputAnswer, setInputAnswer] = useState("");
     const [feedback, setFeedback] = useState<{
@@ -35,15 +40,23 @@ export default function SlendermanPage() {
         message: string;
     } | null>(null);
 
-    if (
-        !state.isLoggedIn ||
-        !currentLevelData
-    ) {
+    // Security Gate: Ensure user is logged in, and is active on this exact level
+    useEffect(() => {
+        if (state.isLoggedIn && state.currentLevel !== 1) {
+            router.push("/dashboard");
+        }
+    }, [state.isLoggedIn, state.currentLevel, router]);
+
+    if (!state.isLoggedIn || state.currentLevel !== 1) {
         return null;
     }
 
     const activeQuestion =
-        currentLevelData.questions[state.currentQuestion - 1];
+        levelData.questions[state.currentQuestion - 1];
+
+    if (!activeQuestion) {
+        return null;
+    }
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -67,6 +80,12 @@ export default function SlendermanPage() {
             });
 
             setInputAnswer("");
+
+            if (res.isLevelComplete) {
+                setTimeout(() => {
+                    exitLevelToDashboard();
+                }, 1500);
+            }
         } else {
             setFeedback({
                 success: false,

@@ -2,12 +2,22 @@
 
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useGame } from "../../context/GameContext";
+import { creepypastaLevels } from "../../data/questions";
 import "./ben.css";
-import { creepypastaLevels } from "@/app/data/questions";
+
+const levelData = creepypastaLevels.find((l) => l.id === 3)!;
 
 export default function BenPage() {
   const [bgImage, setBgImage] = useState("/images/ben/ben1.png");
+  const router = useRouter();
+
+  const {
+    state,
+    submitAnswer,
+    exitLevelToDashboard,
+  } = useGame();
 
   useEffect(() => {
     const totalImages = 12;
@@ -22,33 +32,31 @@ export default function BenPage() {
       setBgImage(`/images/ben/ben${current}.png`);
 
       localStorage.setItem("ben-bg", String(next));
-  }, []);
+  }, [state.currentQuestion]);
 
+  const [inputAnswer, setInputAnswer] = useState("");
+  const [feedback, setFeedback] = useState<{
+    success: boolean;
+    message: string;
+  } | null>(null);
 
-  const {
-    state,
-    submitAnswer,
-    currentLevelData,
-  } = useGame();
+  // Security Gate: Ensure user is logged in, and is active on this exact level
+  useEffect(() => {
+    if (state.isLoggedIn && state.currentLevel !== 3) {
+      router.push("/dashboard");
+    }
+  }, [state.isLoggedIn, state.currentLevel, router]);
 
-    state.currentLevel = 3;
-
-    const [inputAnswer, setInputAnswer] = useState("");
-    const [feedback, setFeedback] = useState<{
-      success: boolean;
-      message: string;
-    } | null>(null);
-
-
-  if (
-    !state.isLoggedIn ||
-    !currentLevelData
-  ) {
+  if (!state.isLoggedIn || state.currentLevel !== 3) {
     return null;
   }
 
   const activeQuestion =
-    currentLevelData.questions[state.currentQuestion - 1];
+    levelData.questions[state.currentQuestion - 1];
+
+  if (!activeQuestion) {
+    return null;
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,6 +80,12 @@ export default function BenPage() {
       });
 
       setInputAnswer("");
+
+      if (res.isLevelComplete) {
+        setTimeout(() => {
+          exitLevelToDashboard();
+        }, 1500);
+      }
     } else {
       setFeedback({
         success: false,

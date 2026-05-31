@@ -1,19 +1,29 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import { useGame } from "../../context/GameContext";
 import { useRouter } from "next/navigation";
+import { creepypastaLevels } from "../../data/questions";
 import "./candle.css";
 
-export default function PuppeteerPage() {
+const levelData = creepypastaLevels.find((l) => l.id === 5)!;
+
+export default function CandleCovePage() {
   const [bgImage, setBgImage] = useState("/images/candlecove/candle1.png");
+  const router = useRouter();
+
+  const {
+    state,
+    submitAnswer,
+    exitLevelToDashboard,
+  } = useGame();
 
   useEffect(() => {
   const totalImages = 8;
 
   let current =
-    Number(localStorage.getItem("puppet-bg")) || 1;
+    Number(localStorage.getItem("candle-bg")) || 1;
 
   const next = current + 1 > totalImages
     ? 1
@@ -21,14 +31,8 @@ export default function PuppeteerPage() {
 
   setBgImage(`/images/candlecove/candle${current}.png`);
 
-  localStorage.setItem("puppet-bg", String(next));
-}, []);
-
-  const {
-    state,
-    submitAnswer,
-    currentLevelData,
-  } = useGame();
+  localStorage.setItem("candle-bg", String(next));
+}, [state.currentQuestion]);
 
   const [inputAnswer, setInputAnswer] = useState("");
   const [feedback, setFeedback] = useState<{
@@ -36,16 +40,23 @@ export default function PuppeteerPage() {
     message: string;
   } | null>(null);
 
+  // Security Gate: Ensure user is logged in, and is active on this exact level
+  useEffect(() => {
+    if (state.isLoggedIn && state.currentLevel !== 5) {
+      router.push("/dashboard");
+    }
+  }, [state.isLoggedIn, state.currentLevel, router]);
 
-  if (
-    !state.isLoggedIn ||
-    !currentLevelData
-  ) {
+  if (!state.isLoggedIn || state.currentLevel !== 5) {
     return null;
   }
 
   const activeQuestion =
-    currentLevelData.questions[state.currentQuestion - 1];
+    levelData.questions[state.currentQuestion - 1];
+
+  if (!activeQuestion) {
+    return null;
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +80,12 @@ export default function PuppeteerPage() {
       });
 
       setInputAnswer("");
+
+      if (res.isLevelComplete) {
+        setTimeout(() => {
+          exitLevelToDashboard();
+        }, 1500);
+      }
     } else {
       setFeedback({
         success: false,
