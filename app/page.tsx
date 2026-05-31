@@ -65,7 +65,7 @@ export default function LoginPage() {
           `[DISPATCH FAILED: ${data.message?.toUpperCase() || "ERROR"}]`
         ]);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setError("TRANSMISSION ERROR. CONNECTION INTERFERENCE.");
     } finally {
@@ -123,7 +123,7 @@ export default function LoginPage() {
 
         {/* LOGO */}
 
-        <div className="logo-section">
+        <div className="heading">
 
           <h1>CRYPTX FILES</h1>
 
