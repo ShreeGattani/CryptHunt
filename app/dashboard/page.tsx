@@ -196,11 +196,35 @@ export default function DashboardPage() {
 
               {/* IMAGE */}
 
-              <img
-                src={level.cover}
-                alt={level.name}
-                className="card-bg"
-              />
+              {isLocked ? (
+                <img
+                  src={level.cover}
+                  alt={level.name}
+                  className="card-bg"
+                />
+              ) : (
+                <Link
+                  href={`/level/${
+                    level.id === 1
+                      ? "slenderman"
+                      : level.id === 2
+                      ? "eyelessjack"
+                      : level.id === 3
+                      ? "ben"
+                      : level.id === 4
+                      ? "puppeteer"
+                      : "candlecove"
+                  }`}
+                  className="card-bg"
+                  style={{ display: "block", zIndex: 2 }}
+                >
+                  <img
+                    src={level.cover}
+                    alt={level.name}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                </Link>
+              )}
 
               {/* OVERLAY */}
 
