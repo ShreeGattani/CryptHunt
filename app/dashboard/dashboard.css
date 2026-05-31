@@ -152,6 +152,7 @@ body {
       rgba(0,0,0,0.7)
     );
   z-index: 1;
+  pointer-events: none;
 }
 
 .card-content {
@@ -162,6 +163,12 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  pointer-events: none;
+}
+
+.card-content a,
+.card-content button {
+  pointer-events: auto;
 }
 
 .tape {
