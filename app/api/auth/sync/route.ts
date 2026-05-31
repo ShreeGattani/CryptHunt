@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { calculateScore } from "../../../utils/score";
 
 // Lazy Graceful Prisma Client instantiation for Prisma 6
 function getPrismaClient() {
@@ -103,30 +104,60 @@ export async function POST(request: Request) {
       });
     }
 
-    // Verify session state matches before updating ticking time
-    if (sessionToken) {
-      const user = await prisma.user.findUnique({
-        where: { email: email.toLowerCase() },
-        select: { sessionToken: true },
-      });
+    const user = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+      select: { sessionToken: true, currentLevel: true, currentQuestion: true },
+    });
 
-      if (user && user.sessionToken && user.sessionToken !== sessionToken) {
-        return NextResponse.json({
-          success: true,
-          databaseStatus: "CONNECTED",
-          sessionActive: false,
-          message: "Session terminated. Lock overridden."
-        });
+    if (!user) {
+      return NextResponse.json(
+        { success: false, message: "Agent profile not found." },
+        { status: 404 }
+      );
+    }
+
+    // Verify session state matches before updating ticking time
+    if (sessionToken && user.sessionToken && user.sessionToken !== sessionToken) {
+      return NextResponse.json({
+        success: true,
+        databaseStatus: "CONNECTED",
+        sessionActive: false,
+        message: "Session terminated. Lock overridden."
+      });
+    }
+
+    // Server-Side Progress Validation (anti-cheat gate)
+    let targetLevel = user.currentLevel;
+    let targetQuestion = user.currentQuestion;
+
+    const reqLevel = currentLevel !== undefined ? parseInt(currentLevel, 10) : undefined;
+    const reqQuestion = currentQuestion !== undefined ? parseInt(currentQuestion, 10) : undefined;
+
+    if (reqLevel !== undefined && reqQuestion !== undefined) {
+      const isReset = reqLevel === 1 && reqQuestion === 1;
+      const isSame = reqLevel === user.currentLevel && reqQuestion === user.currentQuestion;
+      const isNextQuestion = reqLevel === user.currentLevel && reqQuestion === user.currentQuestion + 1;
+      const isNextLevel = reqLevel === user.currentLevel + 1 && reqQuestion === 1;
+
+      if (isReset || isSame || isNextQuestion || isNextLevel) {
+        targetLevel = reqLevel;
+        targetQuestion = reqQuestion;
+      } else {
+        console.warn(`[ANTI-CHEAT] Out-of-order progress rejected for user ${email}. Requested: Level ${reqLevel} Q${reqQuestion}, Database: Level ${user.currentLevel} Q${user.currentQuestion}`);
       }
     }
+
+    // Deterministically calculate score based on verified progress on the server
+    const calculatedScore = calculateScore(targetLevel, targetQuestion);
 
     await prisma.user.update({
       where: { email: email.toLowerCase() },
       data: { 
         elapsedTime: parseInt(elapsedTime, 10),
-        score: score !== undefined ? parseInt(score, 10) : undefined,
-        currentLevel: currentLevel !== undefined ? parseInt(currentLevel, 10) : undefined,
-        currentQuestion: currentQuestion !== undefined ? parseInt(currentQuestion, 10) : undefined,
+        score: calculatedScore,
+        currentLevel: targetLevel,
+        currentQuestion: targetQuestion,
+        completedAt: targetLevel >= 6 ? new Date() : null,
       },
     });
 

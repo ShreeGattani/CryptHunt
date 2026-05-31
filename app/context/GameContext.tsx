@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { creepypastaLevels, LevelData, Question } from "../data/questions";
+import { calculateScore } from "../utils/score";
 
 export interface GameState {
   username: string;
@@ -76,6 +77,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+        // Force calculation of score based on stored progress to prevent localStorage score tampering
+        parsed.score = calculateScore(parsed.currentLevel, parsed.currentQuestion);
         setState(parsed);
       } catch (e) {
         console.error("Failed to parse game session", e);
@@ -120,23 +123,21 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (json.data) {
             const db = json.data;
             
-            // Check if database progress is further along or different than local state
-            const hasFurtherProgress = 
-              db.currentLevel > currentState.currentLevel ||
-              (db.currentLevel === currentState.currentLevel && db.currentQuestion > currentState.currentQuestion) ||
-              db.score > currentState.score ||
+            // Force local score/progress state to synchronize with verified database state if there is any difference
+            const hasDifferentProgress = 
+              db.currentLevel !== currentState.currentLevel ||
+              db.currentQuestion !== currentState.currentQuestion ||
+              db.score !== currentState.score ||
               db.completedAt !== currentState.completedAt ||
               (db.updatedAt && db.updatedAt !== currentState.updatedAt);
 
-            if (hasFurtherProgress) {
+            if (hasDifferentProgress) {
               setState((prev) => ({
                 ...prev,
-                score: Math.max(prev.score, db.score),
-                currentLevel: Math.max(prev.currentLevel, db.currentLevel),
-                currentQuestion: db.currentLevel > prev.currentLevel 
-                  ? db.currentQuestion 
-                  : (db.currentLevel === prev.currentLevel ? Math.max(prev.currentQuestion, db.currentQuestion) : prev.currentQuestion),
-                elapsedTime: db.elapsedTime,
+                score: db.score,
+                currentLevel: db.currentLevel,
+                currentQuestion: db.currentQuestion,
+                elapsedTime: Math.max(prev.elapsedTime, db.elapsedTime),
                 completedAt: db.completedAt || prev.completedAt,
                 updatedAt: db.updatedAt || prev.updatedAt,
               }));
@@ -283,7 +284,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const newState: GameState = {
           username: foundUser.username,
           email: foundUser.email,
-          score: foundUser.score,
+          score: calculateScore(foundUser.currentLevel, foundUser.currentQuestion),
           currentLevel: foundUser.currentLevel,
           currentQuestion: foundUser.currentQuestion,
           startTime: new Date().toISOString(),
@@ -351,8 +352,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
       } else {
         setState((prev) => {
-          const nextScore = prev.score + addedPoints;
           const nextQuestion = prev.currentQuestion + 1;
+          const nextScore = calculateScore(prev.currentLevel, nextQuestion);
           const nowStr = new Date().toISOString();
 
           // Instant cloud synchronization of progress
@@ -418,8 +419,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (isLastQuestion) {
         const nextLevel = prev.currentLevel + 1;
         const allDone = nextLevel > 5;
-        const finalPoints = currentQuestionData ? currentQuestionData.points : 0;
-        const nextScore = prev.score + finalPoints;
+        const nextScore = calculateScore(nextLevel, 1);
         const nowStr = new Date().toISOString();
 
         // Post completion to MySQL / Mock API routes in background

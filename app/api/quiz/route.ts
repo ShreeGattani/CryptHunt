@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { calculateScore } from "../../utils/score";
 
 // Lazy Graceful Prisma Client instantiation
 function getPrismaClient() {
@@ -30,26 +31,46 @@ export async function POST(request: Request) {
     const prisma = getPrismaClient();
     if (prisma) {
       try {
+        let targetLevel = completedLevel + 1;
+        
+        const userExists = await prisma.user.findUnique({
+          where: { email },
+          select: { currentLevel: true }
+        });
+
+        if (userExists) {
+          const isValidCompletion = completedLevel === userExists.currentLevel;
+          const isReset = completedLevel === 0;
+          if (!isValidCompletion && !isReset) {
+            // Out of order transition - override with current database level
+            targetLevel = userExists.currentLevel;
+            console.warn(`[ANTI-CHEAT] Out-of-order level completion rejected for user ${email}. Completed level requested: ${completedLevel}, Database currentLevel is: ${userExists.currentLevel}`);
+          }
+        }
+
+        // Calculate score deterministically on the server side
+        const secureScore = calculateScore(targetLevel, 1);
+
         // Upsert User record
         const user = await prisma.user.upsert({
           where: { email },
           update: {
             username,
-            score,
-            currentLevel: completedLevel + 1,
+            score: secureScore,
+            currentLevel: targetLevel,
             currentQuestion: 1,
             elapsedTime,
-            completedAt: completedLevel >= 5 ? new Date() : null,
+            completedAt: targetLevel >= 6 ? new Date() : null,
           },
           create: {
             username,
             email,
             password: "offline_fallback_pass",
-            score,
-            currentLevel: completedLevel + 1,
+            score: secureScore,
+            currentLevel: targetLevel,
             currentQuestion: 1,
             elapsedTime,
-            completedAt: completedLevel >= 5 ? new Date() : null,
+            completedAt: targetLevel >= 6 ? new Date() : null,
           },
         });
 
@@ -88,19 +109,21 @@ export async function POST(request: Request) {
           "MySQL connection offline or schema not migrated yet. Falling back to local state.",
           dbError.message
         );
+        const secureScore = calculateScore(completedLevel + 1, 1);
         return NextResponse.json({
           success: true,
           message: "Local state persistent. Database offline. Please configure DATABASE_URL in .env and run 'npx prisma db push'.",
           databaseStatus: "OFFLINE_FALLBACK",
-          data: { username, email, score, completedLevel, elapsedTime },
+          data: { username, email, score: secureScore, completedLevel, elapsedTime },
         });
       }
     } else {
+      const secureScore = calculateScore(completedLevel + 1, 1);
       return NextResponse.json({
         success: true,
         message: "Prisma client not configured. Local state persistent.",
         databaseStatus: "OFFLINE_FALLBACK",
-        data: { username, email, score, completedLevel, elapsedTime },
+        data: { username, email, score: secureScore, completedLevel, elapsedTime },
       });
     }
   } catch (error: any) {
