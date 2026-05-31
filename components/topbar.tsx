@@ -1,0 +1,126 @@
+<header className="topbar">
+
+        {/* LEFT */}
+
+        <div className="logo-section">
+
+          <h1>CRYPTHUNT</h1>
+
+          <p>
+            INTERNET LEGENDS ARCHIVE
+          </p>
+
+        </div>
+
+        {/* HUD */}
+
+        <div className="hud">
+
+          <div className="hud-box">
+            AGENT:
+            <span>
+              {state.username.toUpperCase()}
+            </span>
+          </div>
+
+          <div className="hud-box">
+            SCORE:
+            <span>
+              {state.score} PTS
+            </span>
+          </div>
+
+          <div className="hud-box">
+            LEVEL:
+            <span>
+              {isGameComplete
+                ? "5/5"
+                : `${state.currentLevel - 1}/5`}
+            </span>
+          </div>
+
+        </div>
+
+        {/* RIGHT */}
+
+        {/* FLOATING ACTIONS */}
+
+      <div className="floating-actions">
+
+        <button
+          onClick={() =>
+            setIsRulesOpen(true)
+          }
+          className="action-btn"
+        >
+          <BookOpen size={18} />
+        </button>
+
+        <Link
+          href="/leaderboard"
+          className="action-btn"
+        >
+          <Trophy size={18} />
+        </Link>
+
+        <button
+          onClick={logout}
+          className="action-btn"
+        >
+          <LogOut size={18} />
+        </button>
+
+      </div>
+
+      {/* RULES MODAL */}
+
+      {isRulesOpen && (
+
+        <div className="rules-overlay">
+
+          <div className="rules-modal">
+
+            <div className="rules-header">
+
+              <div>
+                <BookOpen size={16} />
+                RULE BOOK
+              </div>
+
+              <button
+                onClick={() =>
+                  setIsRulesOpen(false)
+                }
+              >
+                X
+              </button>
+
+            </div>
+
+            <div className="rules-content">
+
+              <p>
+                1. Solve all 6 questions to unlock the next tape.
+              </p>
+
+              <p>
+                2. Answers are NOT case sensitive.
+              </p>
+
+              <p>
+                3. Each legend contains hidden lore fragments.
+              </p>
+
+              <p>
+                4. Fastest completion secures leaderboard ranking.
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
+
+      </header>
