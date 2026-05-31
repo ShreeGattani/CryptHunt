@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { useGame } from "../context/GameContext";
 import "./leaderboard.css";
 import Image from "next/image";
+import Link from "next/link";
+import { BookOpen, Trophy, CornerUpLeft } from "lucide-react";
 
 interface LeaderboardEntry {
   username: string;
@@ -50,6 +52,7 @@ export default function LeaderboardPage() {
 
   const [boardData, setBoardData] = useState<LeaderboardEntry[]>([]);
   const [lastUpdated, setLastUpdated] = useState(new Date());
+  const [isRulesOpen, setIsRulesOpen] = useState(false);
 
   console.log("boardData length:", boardData.length);
 
@@ -98,9 +101,15 @@ export default function LeaderboardPage() {
           </div>
 
           <div className="top-icons">
-            <button className="top-btn">📖</button>
-            <button className="top-btn">🏆</button>
-            <button className="top-btn">↩</button>
+            <button className="top-btn" onClick={() => setIsRulesOpen(true)} title="Rules Matrix" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+              <BookOpen size={20} style={{ color: '#fff' }} />
+            </button>
+            <button className="top-btn" title="Leaderboard Matrix" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Trophy size={20} style={{ color: '#ba9141' }} />
+            </button>
+            <Link href="/dashboard" className="top-btn" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }} title="Return to Dashboard">
+              <CornerUpLeft size={20} style={{ color: '#fff' }} />
+            </Link>
           </div>
         </div>
 
@@ -199,6 +208,44 @@ export default function LeaderboardPage() {
         </div>
 
       </div>
+
+      {isRulesOpen && (
+        <div className="rules-overlay">
+          <div className="rules-modal">
+            <div className="rules-header">
+              <div>
+                <BookOpen size={16} />
+                RULE BOOK
+              </div>
+              <button
+                onClick={() => setIsRulesOpen(false)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                X
+              </button>
+            </div>
+            <div className="rules-content">
+              <p>
+                1. Solve all 6 questions to unlock the next tape.
+              </p>
+              <p>
+                2. Answers are NOT case sensitive.
+              </p>
+              <p>
+                3. Each legend contains hidden lore fragments.
+              </p>
+              <p>
+                4. Fastest completion secures leaderboard ranking.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
