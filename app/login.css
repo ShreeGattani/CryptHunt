@@ -256,15 +256,10 @@ body{
 
 .dev-otp {
   margin-top: 8px;
-
   padding: 10px;
-
   background: rgba(255,0,0,.08);
-
   border: 1px solid #3e0909;
-
   color: #ff7b7b;
-
   font-size: 11px;
 }
 

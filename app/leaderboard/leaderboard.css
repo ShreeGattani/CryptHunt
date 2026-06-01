@@ -37,15 +37,16 @@ body{
 }
 
 .archive-brand h1 {
-  font-size: 34px;
-  letter-spacing: 3px;
+  font-size: 23px;
+  letter-spacing: 2px;
   color: #fff;
 }
 
 .archive-brand p {
+  margin-top: 2px;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 2px;
   font-size: 14px;
-  color: #777;
-  margin-top: 4px;
 }
 
 .top-icons {
