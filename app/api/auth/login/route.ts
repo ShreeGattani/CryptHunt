@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { attachSessionCookie, createSessionToken, toPublicUser } from "@/lib/server/auth";
+import { attachSessionCookie, createSessionToken, hashSessionToken, toPublicUser } from "@/lib/server/auth";
 import { hashPassword, isLegacyPlaintext, verifyPassword } from "@/lib/server/password";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/server/rate-limit";
 import { requirePrismaClient } from "@/lib/server/prisma";
@@ -39,10 +39,12 @@ export async function POST(request: Request) {
       });
     }
 
-    const sessionToken = createSessionToken();
+    const rawToken = createSessionToken();
+    // Store the SHA-256 hash of the token in the DB — cookie holds the raw value.
+    // A DB dump cannot be used to forge sessions.
     const updated = await prisma.user.update({
       where: { id: user.id },
-      data: { sessionToken },
+      data: { sessionToken: hashSessionToken(rawToken) },
     });
 
     const response = NextResponse.json({
@@ -51,7 +53,7 @@ export async function POST(request: Request) {
       user: toPublicUser(updated),
     });
 
-    return attachSessionCookie(response, sessionToken);
+    return attachSessionCookie(response, rawToken);
   } catch {
     return NextResponse.json(
       { success: false, message: "Internal server authentication error." },

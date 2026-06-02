@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { attachSessionCookie, createSessionToken, toPublicUser } from "@/lib/server/auth";
+import { attachSessionCookie, createSessionToken, hashSessionToken, toPublicUser } from "@/lib/server/auth";
 import { hashPassword } from "@/lib/server/password";
+import bcrypt from "bcryptjs";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/server/rate-limit";
 import { requirePrismaClient } from "@/lib/server/prisma";
 
@@ -26,9 +27,10 @@ export async function POST(request: Request) {
       );
     }
 
-    if (password.length < 4 || password.length > 128) {
+    // Minimum 8 characters — 4 was too weak
+    if (password.length < 8 || password.length > 128) {
       return NextResponse.json(
-        { success: false, message: "Password must be between 4 and 128 characters." },
+        { success: false, message: "Password must be between 8 and 128 characters." },
         { status: 400 }
       );
     }
@@ -52,7 +54,8 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-    if (otpRecord.otp !== otp) {
+    // Constant-time bcrypt comparison — OTP is stored as a bcrypt hash
+    if (!(await bcrypt.compare(otp, otpRecord.otp))) {
       return NextResponse.json(
         { success: false, message: "INVALID DECRYPTION KEY. COGNITIVE HANDSHAKE ABORTED." },
         { status: 400 }
@@ -74,9 +77,14 @@ export async function POST(request: Request) {
 
     await prisma.otpRecord.delete({ where: { email } });
 
-    const sessionToken = createSessionToken();
+    const rawToken = createSessionToken();
     const user = await prisma.user.create({
-      data: { username, email, password: await hashPassword(password), sessionToken },
+      data: {
+        username,
+        email,
+        password: await hashPassword(password),
+        sessionToken: hashSessionToken(rawToken),
+      },
     });
 
     const response = NextResponse.json({
@@ -85,7 +93,7 @@ export async function POST(request: Request) {
       user: toPublicUser(user),
     });
 
-    return attachSessionCookie(response, sessionToken);
+    return attachSessionCookie(response, rawToken);
   } catch {
     return NextResponse.json(
       { success: false, message: "Internal server registry error." },

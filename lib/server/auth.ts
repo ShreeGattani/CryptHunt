@@ -11,6 +11,15 @@ export function createSessionToken(): string {
   return crypto.randomBytes(32).toString("hex");
 }
 
+/**
+ * Hash a raw session token with SHA-256 before storing in the database.
+ * The cookie holds the raw 64-char hex token; the DB holds only the hash.
+ * A full database dump cannot be used to forge session cookies.
+ */
+export function hashSessionToken(raw: string): string {
+  return crypto.createHash("sha256").update(raw).digest("hex");
+}
+
 const cookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
@@ -35,13 +44,14 @@ export async function getSessionTokenFromCookies(): Promise<string | null> {
 }
 
 export async function getAuthenticatedUser(): Promise<User | null> {
-  const token = await getSessionTokenFromCookies();
-  if (!token) return null;
+  const raw = await getSessionTokenFromCookies();
+  if (!raw || raw.length !== 64 || !/^[0-9a-f]+$/.test(raw)) return null;
 
   const prisma = getPrismaClient();
   if (!prisma) return null;
 
-  return prisma.user.findFirst({ where: { sessionToken: token } });
+  // DB stores the SHA-256 hash of the raw token, not the raw token itself
+  return prisma.user.findFirst({ where: { sessionToken: hashSessionToken(raw) } });
 }
 
 /** Safe user fields to send to the client — never includes password or sessionToken. */

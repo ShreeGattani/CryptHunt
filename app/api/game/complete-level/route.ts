@@ -7,6 +7,9 @@ import { requirePrismaClient } from "@/lib/server/prisma";
 /**
  * Finalize a completed level. Awards Q6 points and advances currentLevel.
  * Only callable when levelCompletePending=true — enforced server-side.
+ *
+ * Concurrency: conditional updateMany on (levelCompletePending=true, currentLevel)
+ * ensures this is idempotent — double-tapping the button cannot double-award points.
  */
 export async function POST(request: Request) {
   const user = await getAuthenticatedUser();
@@ -27,12 +30,19 @@ export async function POST(request: Request) {
   }
 
   const prisma = requirePrismaClient();
-  const finalPoints = getQuestionPoints(user.currentLevel, QUESTIONS_PER_LEVEL);
-  const nextLevel = user.currentLevel + 1;
+  const completedLevel = user.currentLevel;
+  const finalPoints = getQuestionPoints(completedLevel, QUESTIONS_PER_LEVEL);
+  const nextLevel = completedLevel + 1;
   const allDone = nextLevel > MAX_LEVEL;
 
-  const updated = await prisma.user.update({
-    where: { id: user.id },
+  // Conditional update: only applies if the user is still in the pending state we read.
+  // A second simultaneous call finds count=0 and returns the already-advanced state.
+  const result = await prisma.user.updateMany({
+    where: {
+      id: user.id,
+      levelCompletePending: true,
+      currentLevel: completedLevel,
+    },
     data: {
       score: user.score + finalPoints,
       currentLevel: nextLevel,
@@ -42,15 +52,21 @@ export async function POST(request: Request) {
     },
   });
 
-  await prisma.levelProgress.upsert({
-    where: { userId_level: { userId: user.id, level: user.currentLevel } },
-    update: { completed: true, completedAt: new Date() },
-    create: { userId: user.id, level: user.currentLevel, completed: true, completedAt: new Date() },
-  });
+  if (result.count > 0) {
+    // This request won the race — record level progress
+    await prisma.levelProgress.upsert({
+      where: { userId_level: { userId: user.id, level: completedLevel } },
+      update: { completed: true, completedAt: new Date() },
+      create: { userId: user.id, level: completedLevel, completed: true, completedAt: new Date() },
+    });
+  }
+
+  // Return fresh state regardless of which request "won"
+  const fresh = await prisma.user.findUnique({ where: { id: user.id } });
 
   return NextResponse.json({
     success: true,
     message: allDone ? "All levels decrypted. Hunt complete." : "Level secured.",
-    user: toPublicUser(updated),
+    user: fresh ? toPublicUser(fresh) : toPublicUser(user),
   });
 }

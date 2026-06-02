@@ -8,6 +8,10 @@ import { requirePrismaClient } from "@/lib/server/prisma";
  * Validate an answer server-side. The answer is never sent to the client.
  * Questions 1–5 advance currentQuestion immediately.
  * Question 6 sets levelCompletePending=true; level advances via /api/game/complete-level.
+ *
+ * Concurrency: conditional updateMany ensures idempotency. If two simultaneous
+ * correct submits race, only the first will match the expected state (currentQuestion
+ * and levelCompletePending=false); the second finds count=0 and returns the fresh state.
  */
 export async function POST(request: Request) {
   const user = await getAuthenticatedUser();
@@ -42,7 +46,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, message: "No active question." }, { status: 400 });
   }
 
-  // If user is already at the level-complete gate, acknowledge without re-validating
+  // Already at level-complete gate — idempotent acknowledge
   if (user.levelCompletePending && questionNumber === QUESTIONS_PER_LEVEL) {
     return NextResponse.json({
       success: true,
@@ -61,29 +65,50 @@ export async function POST(request: Request) {
   const prisma = requirePrismaClient();
 
   if (isLastQuestion) {
-    const updated = await prisma.user.update({
-      where: { id: user.id },
+    // Conditional update: only applies if the state hasn't already changed (race guard)
+    const result = await prisma.user.updateMany({
+      where: { id: user.id, currentQuestion: questionNumber, levelCompletePending: false },
       data: { levelCompletePending: true },
     });
+
+    // If count=0, a parallel request already set the flag; fetch fresh state
+    const fresh = result.count === 0
+      ? await prisma.user.findUnique({ where: { id: user.id } })
+      : null;
+    const finalUser = fresh ?? await prisma.user.findUnique({ where: { id: user.id } });
+
     return NextResponse.json({
       success: true,
       message: `ACCESS GRANTED! +${points} pts. Level fully decrypted!`,
       isLevelComplete: true,
       points,
-      user: toPublicUser(updated),
+      user: finalUser ? toPublicUser(finalUser) : toPublicUser(user),
     });
   }
 
-  const updated = await prisma.user.update({
-    where: { id: user.id },
+  // Conditional update: only applies if currentQuestion still matches what we read
+  const result = await prisma.user.updateMany({
+    where: { id: user.id, currentQuestion: questionNumber, levelCompletePending: false },
     data: { score: user.score + points, currentQuestion: questionNumber + 1 },
   });
+
+  // If count=0, state already advanced (duplicate submit race); return fresh state
+  const finalUser = await prisma.user.findUnique({ where: { id: user.id } });
+
+  if (result.count === 0) {
+    return NextResponse.json({
+      success: true,
+      message: "Already processed.",
+      isLevelComplete: false,
+      user: finalUser ? toPublicUser(finalUser) : toPublicUser(user),
+    });
+  }
 
   return NextResponse.json({
     success: true,
     message: `ACCESS GRANTED! +${points} pts. Moving to next lock...`,
     isLevelComplete: false,
     points,
-    user: toPublicUser(updated),
+    user: finalUser ? toPublicUser(finalUser) : toPublicUser(user),
   });
 }
