@@ -8,7 +8,7 @@ export default function QuestionProgressBar() {
 
   if (!state.isLoggedIn || !currentLevelData) return null;
 
-  const totalQuestions = currentLevelData.questions.length || 6;
+  const totalQuestions = 6; // fixed per level — answers live server-side only
   const currentQ = state.currentQuestion; // 1 to 6
 
   return (

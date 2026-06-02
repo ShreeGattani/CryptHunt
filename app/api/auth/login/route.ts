@@ -1,23 +1,14 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-// Lazy Graceful Prisma Client instantiation
-function getPrismaClient() {
-  try {
-    if (!process.env.DATABASE_URL) {
-      process.env.DATABASE_URL = "mysql://root:password@localhost:3306/crypthunt";
-    }
-    return new PrismaClient();
-  } catch (e) {
-    console.error("Prisma Client initialization failed", e);
-    return null;
-  }
-}
+import { attachSessionCookie, createSessionToken, toPublicUser } from "@/lib/server/auth";
+import { hashPassword, isLegacyPlaintext, verifyPassword } from "@/lib/server/password";
+import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/server/rate-limit";
+import { requirePrismaClient } from "@/lib/server/prisma";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email, password } = body;
+    const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+    const password = typeof body.password === "string" ? body.password : "";
 
     if (!email || !password) {
       return NextResponse.json(
@@ -26,61 +17,44 @@ export async function POST(request: Request) {
       );
     }
 
-    const prisma = getPrismaClient();
+    const ip = getClientIp(request);
+    const rate = checkRateLimit(`login:${ip}:${email}`, 5, 10 * 60_000);
+    if (!rate.allowed) return rateLimitResponse(rate.retryAfterSec);
 
-    if (prisma) {
-      try {
-        const user = await prisma.user.findUnique({
-          where: { email }
-        });
+    const prisma = requirePrismaClient();
+    const user = await prisma.user.findUnique({ where: { email } });
 
-        if (!user || user.password !== password) {
-          return NextResponse.json(
-            { success: false, message: "DECRYPTION DENIED. INVALID EMAIL OR PASSWORD KEY." },
-            { status: 401 }
-          );
-        }
+    if (!user || !(await verifyPassword(password, user.password))) {
+      return NextResponse.json(
+        { success: false, message: "DECRYPTION DENIED. INVALID EMAIL OR PASSWORD KEY." },
+        { status: 401 }
+      );
+    }
 
-        const sessionToken = Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { sessionToken }
-        });
-
-        return NextResponse.json({
-          success: true,
-          message: "Authentication handshake successful.",
-          databaseStatus: "CONNECTED",
-          user: {
-            username: user.username,
-            email: user.email,
-            score: user.score,
-            currentLevel: user.currentLevel,
-            currentQuestion: user.currentQuestion,
-            elapsedTime: user.elapsedTime,
-            sessionToken
-          }
-        });
-      } catch (dbError: any) {
-        console.warn("MySQL Offline: Falling back to local verification system.", dbError.message);
-        return NextResponse.json({
-          success: true,
-          message: "Database connection offline. Enabling Local Storage fallback validation.",
-          databaseStatus: "OFFLINE_FALLBACK",
-          credentialsCheck: { email, password }
-        });
-      }
-    } else {
-      return NextResponse.json({
-        success: true,
-        message: "Database client offline. Enabling Local Storage fallback validation.",
-        databaseStatus: "OFFLINE_FALLBACK",
-        credentialsCheck: { email, password }
+    // Transparent bcrypt migration for legacy plaintext accounts
+    if (isLegacyPlaintext(user.password)) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { password: await hashPassword(password) },
       });
     }
-  } catch (error: any) {
+
+    const sessionToken = createSessionToken();
+    const updated = await prisma.user.update({
+      where: { id: user.id },
+      data: { sessionToken },
+    });
+
+    const response = NextResponse.json({
+      success: true,
+      message: "Authentication handshake successful.",
+      user: toPublicUser(updated),
+    });
+
+    return attachSessionCookie(response, sessionToken);
+  } catch {
     return NextResponse.json(
-      { success: false, message: "Internal server authentication error.", error: error.message },
+      { success: false, message: "Internal server authentication error." },
       { status: 500 }
     );
   }

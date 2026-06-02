@@ -4,170 +4,94 @@ import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useGame } from "../../context/GameContext";
-import { creepypastaLevels } from "../../data/questions";
 import TopBar from "../../../components/topbar";
 import QuestionProgressBar from "../../../components/QuestionProgressBar";
 import "./ben.css";
 
-const levelData = creepypastaLevels.find((l) => l.id === 3)!;
+const LEVEL_ID = 3;
 
 export default function BenPage() {
   const [bgImage, setBgImage] = useState("/images/ben/ben1.png");
+  const [levelCompleteGate, setLevelCompleteGate] = useState(false);
   const router = useRouter();
 
-  const {
-    state,
-    submitAnswer,
-    exitLevelToDashboard,
-  } = useGame();
+  const { state, submitAnswer, exitLevelToDashboard, currentQuestionData, loadLevelQuestion, isInitialized } = useGame();
+
+  const [inputAnswer, setInputAnswer] = useState("");
+  const [feedback, setFeedback] = useState<{ success: boolean; message: string } | null>(null);
 
   useEffect(() => {
     const totalImages = 12;
-
-    let current =
-      Number(localStorage.getItem("ben-bg")) || 1;
-
-      const next = current + 1 > totalImages
-        ? 1
-        : current + 1;
-
-      setBgImage(`/images/ben/ben${current}.png`);
-
-      localStorage.setItem("ben-bg", String(next));
+    let current = Number(localStorage.getItem("ben-bg")) || 1;
+    setBgImage(`/images/ben/ben${current}.png`);
+    localStorage.setItem("ben-bg", String(current + 1 > totalImages ? 1 : current + 1));
   }, [state.currentQuestion]);
 
-  const [inputAnswer, setInputAnswer] = useState("");
-  const [feedback, setFeedback] = useState<{
-    success: boolean;
-    message: string;
-  } | null>(null);
-
-  // Security Gate: Ensure user is logged in, and is active on this exact level
   useEffect(() => {
-    if (state.isLoggedIn && state.currentLevel !== 3) {
-      router.push("/dashboard");
-    }
-  }, [state.isLoggedIn, state.currentLevel, router]);
+    if (!isInitialized || !state.isLoggedIn) return;
+    if (state.currentLevel !== LEVEL_ID) { router.push("/dashboard"); return; }
+    loadLevelQuestion(LEVEL_ID).then(({ levelCompletePending }) => {
+      if (levelCompletePending) setLevelCompleteGate(true);
+    });
+  }, [isInitialized, state.isLoggedIn, state.currentLevel, router, loadLevelQuestion]);
 
-  if (!state.isLoggedIn || state.currentLevel !== 3) {
-    return null;
-  }
+  if (!state.isLoggedIn || (!currentQuestionData && !levelCompleteGate)) return null;
 
-  const activeQuestion =
-    levelData.questions[state.currentQuestion - 1];
-
-  if (!activeQuestion) {
-    return null;
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     setFeedback(null);
+    if (!inputAnswer.trim()) { setFeedback({ success: false, message: "Answer cannot be empty." }); return; }
 
-    if (!inputAnswer.trim()) {
-      setFeedback({
-        success: false,
-        message: "Answer cannot be empty.",
-      });
-      return;
-    }
-
-    const res = submitAnswer(inputAnswer);
-
+    const res = await submitAnswer(inputAnswer);
     if (res.success) {
-      setFeedback({
-        success: true,
-        message: res.message,
-      });
-
+      setFeedback({ success: true, message: res.message });
       setInputAnswer("");
-
-      if (res.isLevelComplete) {
-        setTimeout(() => {
-          exitLevelToDashboard();
-        }, 1500);
-      }
+      if (res.isLevelComplete) setLevelCompleteGate(true);
     } else {
-      setFeedback({
-        success: false,
-        message: res.message,
-      });
+      setFeedback({ success: false, message: res.message });
     }
   };
 
-
   return (
-    <div
-      className="ben-container"
-      style={{
-        backgroundImage: `url(${bgImage})`,
-      }}
-    >
+    <div className="ben-container" style={{ backgroundImage: `url(${bgImage})` }}>
       <TopBar isLevelPage={true} />
       <div className="ben-content vcr-font">
-
-      {/* TITLE */}
-      <div className="title-section">
-        <h1>LEVEL: BEN DROWNED</h1>
-
-        <Image src="/images/divider.png" alt="divider" width={400} height={40} className="divider-img"></Image>
-
-        <QuestionProgressBar />
+        {levelCompleteGate ? (
+          <>
+            <div className="title-section">
+              <h1>LEVEL SECURED</h1>
+              <Image src="/images/divider.png" alt="divider" width={400} height={40} className="divider-img" />
+            </div>
+            <p className="cipher-text vcr-font">YOU SHOULDN&apos;T HAVE DONE THAT. ALL 6 PAGES RECOVERED. EXIT NOW.</p>
+            <div className="answer-section vcr-font">
+              <button onClick={() => exitLevelToDashboard()} className="submit-btn vcr-font" style={{ width: "100%", marginTop: "1rem" }}>
+                SECURE LOGS &amp; EXIT
+              </button>
+            </div>
+          </>
+        ) : currentQuestionData ? (
+          <>
+            <div className="title-section">
+              <h1>LEVEL: BEN DROWNED</h1>
+              <Image src="/images/divider.png" alt="divider" width={400} height={40} className="divider-img" />
+              <QuestionProgressBar />
+            </div>
+            <p className="cipher-text vcr-font">{currentQuestionData.text}</p>
+            <div className="answer-section vcr-font">
+              <div className="answer-header">
+                <Image src="/images/small-left.png" alt="divider" width={120} height={20} className="mini-divider-img" />
+                <span>ENTER YOUR ANSWER</span>
+                <Image src="/images/small-right.png" alt="divider" width={120} height={20} className="mini-divider-img reverse" />
+              </div>
+              <form onSubmit={handleSubmit} className="answer-form">
+                <input type="text" value={inputAnswer} onChange={(e) => setInputAnswer(e.target.value)} placeholder="Type your answer here [no spaces]..." className="answer-input vcr-font" />
+                <button type="submit" className="submit-btn vcr-font">SUBMIT</button>
+              </form>
+              {feedback && <div className={`feedback ${feedback.success ? "success" : "error"}`}>{feedback.message}</div>}
+            </div>
+          </>
+        ) : null}
       </div>
-
-    {/* QUESTION */}
-    <p className="cipher-text vcr-font">
-      {activeQuestion.text}
-    </p>
-
-    {/* ANSWER */}
-    <div className="answer-section vcr-font">
-
-      <div className="answer-header">
-        <Image src="/images/small-left.png" alt="divider" width={120} height={20} className="mini-divider-img"/>
-
-        <span>ENTER YOUR ANSWER</span>
-
-        <Image src="/images/small-right.png" alt="divider" width={120} height={20} className="mini-divider-img reverse"/>
-
-      </div>
-
-      <form
-        onSubmit={handleSubmit}
-        className="answer-form"
-      >
-        <input
-          type="text"
-          value={inputAnswer}
-          onChange={(e) =>
-            setInputAnswer(e.target.value)
-          }
-          placeholder="Type your answer here [no spaces]..."
-          className="answer-input vcr-font"
-        />
-
-        <button
-          type="submit"
-          className="submit-btn vcr-font"
-        >
-          SUBMIT
-        </button>
-      </form>
-
-      {feedback && (
-        <div
-          className={`feedback ${
-            feedback.success
-              ? "success"
-              : "error"
-          }`}
-        >
-          {feedback.message}
-        </div>
-      )}
     </div>
-  </div>
-</div>
   );
 }

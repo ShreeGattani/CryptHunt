@@ -1,174 +1,86 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import nodemailer from "nodemailer";
-
-// Lazy Graceful Prisma Client instantiation
-function getPrismaClient() {
-  try {
-    if (!process.env.DATABASE_URL) {
-      process.env.DATABASE_URL = "mysql://root:password@localhost:3306/crypthunt";
-    }
-    return new PrismaClient();
-  } catch (e) {
-    console.error("Prisma Client initialization failed", e);
-    return null;
-  }
-}
+import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/server/rate-limit";
+import { requirePrismaClient } from "@/lib/server/prisma";
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { email } = body;
+    const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
 
-    if (!email || !email.includes("@")) {
+    if (!email || !email.includes("@") || email.length > 254) {
       return NextResponse.json(
         { success: false, message: "Core email node is invalid or empty." },
         { status: 400 }
       );
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
-    const prisma = getPrismaClient();
+    const ip = getClientIp(request);
+    const rate = checkRateLimit(`otp:${ip}:${email}`, 3, 60 * 60_000);
+    if (!rate.allowed) return rateLimitResponse(rate.retryAfterSec);
 
-    if (!prisma) {
-      // Offline fallback simulation
-      const mockOtp = "1337";
-      console.log(`[OFFLINE FALLBACK] Generated Mock OTP for ${normalizedEmail}: ${mockOtp}`);
-      return NextResponse.json({
-        success: true,
-        message: "Database offline. Offline fallback enabled. Local code simulated.",
-        databaseStatus: "OFFLINE_FALLBACK",
-        devOtp: mockOtp,
-        sentCount: 1,
-      });
-    }
+    const prisma = requirePrismaClient();
 
-    try {
-      // 1. Check if email is already registered
-      const existingUser = await prisma.user.findUnique({
-        where: { email: normalizedEmail },
-      });
-
-      if (existingUser) {
-        return NextResponse.json(
-          { success: false, message: "EMAIL ALREADY REGISTERED MATRIX INDUCTION." },
-          { status: 400 }
-        );
-      }
-
-      // 2. Check current OTP status
-      const existingOtpRecord = await prisma.otpRecord.findUnique({
-        where: { email: normalizedEmail },
-      });
-
-      const currentCount = existingOtpRecord ? existingOtpRecord.sentCount : 0;
-
-      if (currentCount >= 2) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: `TRANSMISSION DENIED: MAXIMUM OTP LIMIT (2/2) EXCEEDED FOR ${normalizedEmail.toUpperCase()}.`,
-          },
-          { status: 400 }
-        );
-      }
-
-      // 3. Generate secure 6-digit OTP
-      const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes expiration
-      const nextCount = currentCount + 1;
-
-      // 4. Save to Database
-      await prisma.otpRecord.upsert({
-        where: { email: normalizedEmail },
-        update: {
-          otp,
-          sentCount: nextCount,
-          expiresAt,
-        },
-        create: {
-          email: normalizedEmail,
-          otp,
-          sentCount: nextCount,
-          expiresAt,
-        },
-      });
-
-      // 5. Send Email
-      const gmailUser = process.env.GMAIL_USER;
-      const gmailPass = process.env.GMAIL_PASS;
-
-      let emailSent = false;
-      let emailError = "";
-
-      if (gmailUser && gmailPass) {
-        try {
-          const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-              user: gmailUser,
-              pass: gmailPass,
-            },
-          });
-
-          const htmlContent = `
-            <div style="background-color: #09090b; border: 2px solid #7f1d1d; color: #f4f4f5; font-family: Courier New, Courier, monospace; padding: 24px; border-radius: 4px; max-width: 600px; margin: 0 auto; box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);">
-              <h2 style="color: #ef4444; border-bottom: 1px dashed #7f1d1d; padding-bottom: 12px; margin-top: 0; letter-spacing: 2px; text-transform: uppercase; font-weight: bold; text-align: center;">CRYPTHUNT // IDENTITY HANDSHAKE</h2>
-              <p style="color: #a1a1aa; font-size: 14px; line-height: 1.5;">An agent registration attempt has been initiated on our decryption portal for this address.</p>
-              <p style="color: #a1a1aa; font-size: 14px; line-height: 1.5;">Inject the following decryption key into your registration form to verify your consciousness:</p>
-              <div style="background-color: #020617; border: 1px solid #7f1d1d; color: #ef4444; font-size: 32px; font-weight: bold; text-align: center; padding: 16px; margin: 24px 0; border-radius: 4px; letter-spacing: 8px; text-shadow: 0 0 8px rgba(239, 68, 68, 0.4);">
-                ${otp}
-              </div>
-              <p style="color: #dc2626; font-size: 12px; font-weight: bold; margin-bottom: 8px; text-align: center; text-transform: uppercase;">
-                DISPATCH ATTEMPT ${nextCount} OF 2
-              </p>
-              <p style="color: #71717a; font-size: 11px; margin-bottom: 0; text-align: center;">This transmission key will disintegrate in 10 minutes.</p>
-              <p style="color: #ef4444; font-size: 10px; margin-top: 8px; text-align: center; opacity: 0.6; text-transform: uppercase;">
-                WARNING: WE WILL WATCH YOU FALL IN LOVE WITH THE VOID.
-              </p>
-            </div>
-          `;
-
-          await transporter.sendMail({
-            from: `"CRYPTHUNT Portal" <${gmailUser}>`,
-            to: normalizedEmail,
-            subject: `[CRYPTHUNT] Identity verification key inside...`,
-            html: htmlContent,
-          });
-
-          emailSent = true;
-        } catch (e: any) {
-          console.error("Nodemailer failed to dispatch OTP email:", e);
-          emailError = e.message;
-        }
-      } else {
-        console.log(`[GMAIL SMTP NOT CONFIGURED] Generated OTP for ${normalizedEmail}: ${otp}`);
-      }
-
-      // 6. Return response
-      const isDev = process.env.NODE_ENV === "development" || !process.env.GMAIL_USER;
-      return NextResponse.json({
-        success: true,
-        message: emailSent
-          ? `Verification key dispatched to your email node. (${nextCount}/2)`
-          : `Handshake initiated. (Attempts: ${nextCount}/2). Check server terminal for keys.`,
-        databaseStatus: "CONNECTED",
-        sentCount: nextCount,
-        // Premium feature: Expose OTP in response for developers if SMTP is offline/dev
-        devOtp: isDev ? otp : undefined,
-        debugError: emailError ? emailError : undefined,
-      });
-
-    } catch (dbError: any) {
-      console.error("Database OTP operation failed:", dbError);
+    if (await prisma.user.findUnique({ where: { email } })) {
       return NextResponse.json(
-        { success: false, message: "Registry error: Failed to record verification sequence." },
-        { status: 500 }
+        { success: false, message: "EMAIL ALREADY REGISTERED MATRIX INDUCTION." },
+        { status: 400 }
       );
     }
-  } catch (error: any) {
+
+    const existingOtp = await prisma.otpRecord.findUnique({ where: { email } });
+    const currentCount = existingOtp ? existingOtp.sentCount : 0;
+
+    if (currentCount >= 2) {
+      return NextResponse.json(
+        { success: false, message: `TRANSMISSION DENIED: MAXIMUM OTP LIMIT (2/2) EXCEEDED FOR ${email.toUpperCase()}.` },
+        { status: 400 }
+      );
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    const nextCount = currentCount + 1;
+
+    await prisma.otpRecord.upsert({
+      where: { email },
+      update: { otp, sentCount: nextCount, expiresAt },
+      create: { email, otp, sentCount: nextCount, expiresAt },
+    });
+
+    const gmailUser = process.env.GMAIL_USER;
+    const gmailPass = process.env.GMAIL_PASS;
+    let emailSent = false;
+
+    if (gmailUser && gmailPass) {
+      try {
+        const transporter = nodemailer.createTransport({ service: "gmail", auth: { user: gmailUser, pass: gmailPass } });
+        await transporter.sendMail({
+          from: `"CRYPTHUNT Portal" <${gmailUser}>`,
+          to: email,
+          subject: "[CRYPTHUNT] Identity verification key inside...",
+          html: `<div style="background-color:#09090b;border:2px solid #7f1d1d;color:#f4f4f5;font-family:monospace;padding:24px;"><h2 style="color:#ef4444;text-align:center;">CRYPTHUNT // IDENTITY HANDSHAKE</h2><p>Inject this decryption key into your registration form:</p><div style="font-size:32px;font-weight:bold;text-align:center;color:#ef4444;letter-spacing:8px;padding:16px;">${otp}</div><p style="text-align:center;font-size:12px;">DISPATCH ATTEMPT ${nextCount} OF 2</p><p style="text-align:center;font-size:11px;color:#71717a;">Expires in 10 minutes.</p></div>`,
+        });
+        emailSent = true;
+      } catch (e) {
+        console.error("Nodemailer failed:", e);
+      }
+    } else if (process.env.NODE_ENV === "development") {
+      // In local dev only — OTP is printed to server console, never to the API response
+      console.log(`[DEV ONLY] OTP for ${email}: ${otp}`);
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: emailSent
+        ? `Verification key dispatched to your email node. (${nextCount}/2)`
+        : `Handshake initiated. (Attempts: ${nextCount}/2). Check your email.`,
+      sentCount: nextCount,
+      // devOtp is intentionally omitted — it is shown only in the server terminal
+    });
+  } catch {
     return NextResponse.json(
-      { success: false, message: "Internal server registry error.", error: error.message },
+      { success: false, message: "Internal server registry error." },
       { status: 500 }
     );
   }

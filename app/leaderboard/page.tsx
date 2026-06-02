@@ -9,7 +9,6 @@ import { BookOpen, Trophy, CornerUpLeft } from "lucide-react";
 
 interface LeaderboardEntry {
   username: string;
-  email: string;
   score: number;
   completedLevels: number;
   updatedAt: string;
@@ -17,34 +16,10 @@ interface LeaderboardEntry {
 }
 
 const mockHackers: LeaderboardEntry[] = [
-  {
-    username: "HEYA",
-    email: "heya@archive.net",
-    score: 4750,
-    completedLevels: 5,
-    updatedAt: "2026-05-28T11:46:25.000Z",
-  },
-  {
-    username: "SHRUTI",
-    email: "shruti@archive.net",
-    score: 4220,
-    completedLevels: 5,
-    updatedAt: "2026-05-27T14:41:18.000Z",
-  },
-  {
-    username: "GUEST",
-    email: "guest@archive.net",
-    score: 4220,
-    completedLevels: 5,
-    updatedAt: "2026-05-28T11:42:46.000Z",
-  },
-  {
-    username: "NEW",
-    email: "guest@archive.net",
-    score: 420,
-    completedLevels: 0,
-    updatedAt: "2026-05-28T11:42:46.000Z",
-  },
+  { username: "HEYA", score: 4750, completedLevels: 5, updatedAt: "2026-05-28T11:46:25.000Z" },
+  { username: "SHRUTI", score: 4220, completedLevels: 5, updatedAt: "2026-05-27T14:41:18.000Z" },
+  { username: "GHOST_SIGNAL", score: 3890, completedLevels: 5, updatedAt: "2026-05-28T11:42:46.000Z" },
+  { username: "STATIC_VOID", score: 1240, completedLevels: 2, updatedAt: "2026-05-28T11:42:46.000Z" },
 ];
 
 export default function LeaderboardPage() {
@@ -55,61 +30,37 @@ export default function LeaderboardPage() {
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [isRulesOpen, setIsRulesOpen] = useState(false);
 
-  console.log("boardData length:", boardData.length);
-
   const fetchLeaderboard = async (showLoading = false) => {
     if (showLoading) setIsLoading(true);
     let entries: LeaderboardEntry[] = [];
-    let usingDb = false;
 
     try {
       const res = await fetch("/api/quiz");
       const json = await res.json();
-      
-      if (res.ok && json.success && json.databaseStatus === "CONNECTED") {
-        entries = json.data || [];
-        usingDb = true;
+      if (res.ok && json.success && json.data) {
+        entries = json.data;
       }
-    } catch (e) {
-      console.warn("Failed fetching production leaderboard, using local fallbacks", e);
+    } catch {
+      // fall through to mock data
     }
 
-    // If database is offline or returned fallback status, use local localStorage database
-    if (!usingDb) {
-      try {
-        const localUsersRaw = localStorage.getItem("crypthunt_local_users");
-        if (localUsersRaw) {
-          const localUsers = JSON.parse(localUsersRaw);
-          entries = localUsers.map((u: any) => ({
-            username: u.username,
-            email: u.email,
-            score: u.score,
-            completedLevels: u.currentLevel - 1,
-            updatedAt: u.updatedAt || new Date().toISOString()
-          }));
-        }
-      } catch (err) {
-        console.error("Failed to restore local user leaderboard", err);
-      }
-
-      // If no local users registered yet, seed the board with classic creepypasta mock hackers!
-      if (entries.length === 0) {
-        entries = [...mockHackers];
-      }
+    if (entries.length === 0) {
+      entries = [...mockHackers];
     }
 
-    // Inject or update the active player's profile dynamically
+    // Inject the active player's profile — username match only, no email
     if (state.isLoggedIn) {
       const completedLevels = Math.max(0, state.currentLevel - 1);
-      const userIndex = entries.findIndex(e => e.email.toLowerCase() === state.email.toLowerCase());
-      
+      const userIndex = entries.findIndex(
+        (e) => e.username.toLowerCase() === state.username.toLowerCase()
+      );
+
       const userEntry: LeaderboardEntry = {
         username: state.username,
-        email: state.email,
         score: state.score,
         completedLevels,
         updatedAt: state.updatedAt || new Date().toISOString(),
-        isCurrentUser: true
+        isCurrentUser: true,
       };
 
       if (userIndex > -1) {

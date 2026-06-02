@@ -6,7 +6,7 @@ import "./dashboard.css";
 import Link from "next/link";
 
 import { useGame } from "../context/GameContext";
-import { creepypastaLevels } from "../data/questions";
+import { creepypastaLevels } from "../data/levels-public";
 import TopBar from "../../components/topbar";
 
 import {

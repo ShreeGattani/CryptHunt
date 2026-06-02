@@ -21,8 +21,9 @@ model User {
   startTime       DateTime        @default(now())
   elapsedTime     Int             @default(0) // total time in seconds
   completedAt     DateTime?
-  sessionToken    String?         // Added for single session enforcement
-  createdAt       DateTime        @default(now())
+  sessionToken         String?
+  levelCompletePending Boolean   @default(false)
+  createdAt            DateTime  @default(now())
   updatedAt       DateTime        @updatedAt
   progress        LevelProgress[]
 
