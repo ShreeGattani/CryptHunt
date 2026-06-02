@@ -3,9 +3,9 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useGame } from "../app/context/GameContext";
-import { BookOpen, Trophy, LogOut } from "lucide-react";
+import { BookOpen, Trophy, LogOut, Home } from "lucide-react";
 
-export default function TopBar() {
+export default function TopBar({ isLevelPage = false }: { isLevelPage?: boolean }) {
   const { state, logout } = useGame();
   const [isRulesOpen, setIsRulesOpen] = useState(false);
 
@@ -14,7 +14,7 @@ export default function TopBar() {
   const isGameComplete = state.currentLevel > 5;
 
   return (
-    <header className="topbar">
+    <header className={`topbar ${isLevelPage ? "topbar-absolute" : ""}`}>
       {/* LEFT */}
       <div className="logo-section">
         <h1>CRYPTHUNT</h1>
@@ -39,15 +39,21 @@ export default function TopBar() {
 
       {/* RIGHT */}
       <div className="floating-actions">
-        <button onClick={() => setIsRulesOpen(true)} className="action-btn">
+        <button onClick={() => setIsRulesOpen(true)} className="action-btn" title="Rule Book">
           <BookOpen size={18} />
         </button>
-        <Link href="/leaderboard" className="action-btn">
+        <Link href="/leaderboard" className="action-btn" title="Leaderboard">
           <Trophy size={18} />
         </Link>
-        <button onClick={logout} className="action-btn">
-          <LogOut size={18} />
-        </button>
+        {isLevelPage ? (
+          <Link href="/dashboard" className="action-btn" title="Back to Home">
+            <Home size={18} />
+          </Link>
+        ) : (
+          <button onClick={logout} className="action-btn" title="Logout">
+            <LogOut size={18} />
+          </button>
+        )}
       </div>
 
       {/* RULES MODAL */}

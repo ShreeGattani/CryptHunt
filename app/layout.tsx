@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { GameProvider } from "./context/GameContext";
 import "./globals.css";
+import "../components/topbar.css";
+import "../components/QuestionProgressBar.css";
+
 
 export const metadata: Metadata = {
   title: "Crypthunt // Creepypasta Digital Labyrinth",

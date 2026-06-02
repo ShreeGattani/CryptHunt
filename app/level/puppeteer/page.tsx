@@ -5,6 +5,8 @@ import React, { useState, useEffect } from "react";
 import { useGame } from "../../context/GameContext";
 import { useRouter } from "next/navigation";
 import { creepypastaLevels } from "../../data/questions";
+import TopBar from "../../../components/topbar";
+import QuestionProgressBar from "../../../components/QuestionProgressBar";
 import "./puppet.css";
 
 const levelData = creepypastaLevels.find((l) => l.id === 4)!;
@@ -102,7 +104,7 @@ export default function PuppeteerPage() {
     backgroundImage: `url(${bgImage})`,
   }}
 >
-
+  <TopBar isLevelPage={true} />
   <div className="puppeteer-content vcr-font">
 
     {/* TITLE */}
@@ -110,6 +112,8 @@ export default function PuppeteerPage() {
       <h1>LEVEL: THE PUPPETEER</h1>
 
       <Image src="/images/divider.png" alt="divider" width={400} height={40} className="divider-img"></Image>
+
+      <QuestionProgressBar />
     </div>
 
     {/* QUESTION */}

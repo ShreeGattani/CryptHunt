@@ -5,6 +5,8 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useGame } from "../../context/GameContext";
 import { creepypastaLevels } from "../../data/questions";
+import TopBar from "../../../components/topbar";
+import QuestionProgressBar from "../../../components/QuestionProgressBar";
 import "./ben.css";
 
 const levelData = creepypastaLevels.find((l) => l.id === 3)!;
@@ -102,15 +104,17 @@ export default function BenPage() {
         backgroundImage: `url(${bgImage})`,
       }}
     >
+      <TopBar isLevelPage={true} />
+      <div className="ben-content vcr-font">
 
-    <div className="ben-content vcr-font">
+      {/* TITLE */}
+      <div className="title-section">
+        <h1>LEVEL: BEN DROWNED</h1>
 
-    {/* TITLE */}
-    <div className="title-section">
-      <h1>LEVEL: BEN DROWNED</h1>
+        <Image src="/images/divider.png" alt="divider" width={400} height={40} className="divider-img"></Image>
 
-      <Image src="/images/divider.png" alt="divider" width={400} height={40} className="divider-img"></Image>
-    </div>
+        <QuestionProgressBar />
+      </div>
 
     {/* QUESTION */}
     <p className="cipher-text vcr-font">

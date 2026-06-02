@@ -5,6 +5,8 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useGame } from "../../context/GameContext";
 import { creepypastaLevels } from "../../data/questions";
+import TopBar from "../../../components/topbar";
+import QuestionProgressBar from "../../../components/QuestionProgressBar";
 import "./slender.css";
 
 const levelData = creepypastaLevels.find((l) => l.id === 1)!;
@@ -101,6 +103,7 @@ export default function SlendermanPage() {
                 backgroundImage: `url(${bgImage})`,
             }}
         >
+            <TopBar isLevelPage={true} />
             <div className="slenderman-overlay" />
 
             <div className="slenderman-content vcr-font">
@@ -116,6 +119,8 @@ export default function SlendermanPage() {
                         height={40}
                         className="divider-img"
                     />
+
+                    <QuestionProgressBar />
                 </div>
 
                 {/* QUESTION */}

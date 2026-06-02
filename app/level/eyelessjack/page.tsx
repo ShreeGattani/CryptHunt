@@ -5,6 +5,8 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useGame } from "../../context/GameContext";
 import { creepypastaLevels } from "../../data/questions";
+import TopBar from "../../../components/topbar";
+import QuestionProgressBar from "../../../components/QuestionProgressBar";
 import "./eyelessjack.css";
 
 const TOTAL_IMAGES = 9;
@@ -118,6 +120,7 @@ export default function EyelessJackPage() {
         backgroundImage: `url(${bgImage})`,
       }}
     >
+      <TopBar isLevelPage={true} />
       <div className="ej-content vcr-font">
 
         {/* TITLE */}
@@ -131,6 +134,8 @@ export default function EyelessJackPage() {
             height={40}
             className="divider-img"
           />
+
+          <QuestionProgressBar />
         </div>
 
 
