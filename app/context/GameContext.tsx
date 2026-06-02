@@ -77,11 +77,24 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .then(async (res) => {
         if (res.ok) {
           const json = await res.json();
-          if (json.success && json.user) applyUser(json.user);
+          if (json.success && json.user) {
+            applyUser(json.user);
+            setIsInitialized(true);
+          } else {
+            setIsInitialized(true);
+          }
+        } else {
+          // Cookie is invalid or user was deleted from DB. Clear cookie on browser.
+          fetch("/api/auth/logout", { method: "POST", credentials: "include" })
+            .catch(() => {})
+            .finally(() => {
+              setIsInitialized(true);
+            });
         }
       })
-      .catch(() => {})
-      .finally(() => setIsInitialized(true));
+      .catch(() => {
+        setIsInitialized(true);
+      });
   }, [applyUser]);
 
   // Background sync: pull server state every 10s, push elapsedTime only
@@ -95,6 +108,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const pull = await fetch("/api/auth/sync", { credentials: "include" });
         if (pull.status === 401) {
+          fetch("/api/auth/logout", { method: "POST", credentials: "include" }).catch(() => {});
           setState(defaultState);
           setCurrentQuestionData(null);
           router.push("/");
