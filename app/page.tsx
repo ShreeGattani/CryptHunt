@@ -82,8 +82,8 @@ export default function LoginPage() {
       setError("VALID EMAIL ADDRESS MUST BE INJECTED.");
       return;
     }
-    if (!password.trim() || password.length < 4) {
-      setError("DECRYPTION PASS KEY MUST BE 4+ CHARACTERS.");
+    if (!password.trim() || password.length < 8) {
+      setError("DECRYPTION PASS KEY MUST BE 8+ CHARACTERS.");
       return;
     }
 

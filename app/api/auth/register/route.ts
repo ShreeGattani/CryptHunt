@@ -71,14 +71,15 @@ export async function POST(request: Request) {
     }
 
     if (await prisma.user.findUnique({ where: { email } })) {
+      // Generic message — avoids confirming which accounts exist
       return NextResponse.json(
-        { success: false, message: "EMAIL ALREADY REGISTERED MATRIX INDUCTION." },
+        { success: false, message: "REGISTRATION BLOCKED. TRY LOGGING IN INSTEAD." },
         { status: 400 }
       );
     }
     if (await prisma.user.findUnique({ where: { username } })) {
       return NextResponse.json(
-        { success: false, message: "HACKER ALIAS IN USE BY ANOTHER AGENT." },
+        { success: false, message: "HACKER ALIAS ALREADY CLAIMED. CHOOSE ANOTHER." },
         { status: 400 }
       );
     }
