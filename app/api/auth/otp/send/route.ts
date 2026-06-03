@@ -19,7 +19,10 @@ export async function POST(request: Request) {
     const body = await request.json();
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
 
-    if (!email || !email.includes("@") || email.length > 254) {
+    // RFC-5321-inspired check: local@domain.tld, no spaces, reasonable length.
+    // Catches "@", "a@", "@b.com", "x y@z.com", bare domain, etc.
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!email || email.length > 254 || !EMAIL_RE.test(email)) {
       return NextResponse.json(
         { success: false, message: "Core email node is invalid or empty." },
         { status: 400 }

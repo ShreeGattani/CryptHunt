@@ -20,6 +20,14 @@ export async function POST(request: Request) {
       );
     }
 
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (email.length > 254 || !EMAIL_RE.test(email)) {
+      return NextResponse.json(
+        { success: false, message: "Email format is invalid." },
+        { status: 400 }
+      );
+    }
+
     if (username.length > 32 || !/^[a-zA-Z0-9_\- ]+$/.test(username)) {
       return NextResponse.json(
         { success: false, message: "Alias must be 1-32 chars: letters, numbers, spaces, _ or -." },
