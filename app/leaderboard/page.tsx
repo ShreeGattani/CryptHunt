@@ -108,7 +108,7 @@ export default function LeaderboardPage() {
     }, 10 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [state]);
+  }, [state.isLoggedIn, state.username, state.score, state.currentLevel]);
 
   return (
     <div className="leaderboard-page">
