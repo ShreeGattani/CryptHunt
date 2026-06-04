@@ -54,6 +54,16 @@ export async function getAuthenticatedUser(): Promise<User | null> {
   return prisma.user.findFirst({ where: { sessionToken: hashSessionToken(raw) } });
 }
 
+export function checkIsLocked(createdAt: Date): boolean {
+  const now = new Date();
+  const huntStartTime = new Date("2026-06-06T12:00:00+05:30");
+  if (now >= huntStartTime) {
+    return false;
+  }
+  const lockCutoffTime = new Date("2026-06-05T00:30:00+05:30");
+  return createdAt >= lockCutoffTime;
+}
+
 /** Safe user fields to send to the client — never includes password or sessionToken. */
 export function toPublicUser(user: User) {
   return {
@@ -66,5 +76,7 @@ export function toPublicUser(user: User) {
     completedAt: user.completedAt?.toISOString() ?? null,
     updatedAt: user.updatedAt.toISOString(),
     levelCompletePending: user.levelCompletePending,
+    createdAt: user.createdAt.toISOString(),
+    isLocked: checkIsLocked(user.createdAt),
   };
 }

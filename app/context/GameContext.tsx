@@ -16,6 +16,8 @@ export interface GameState {
   isLoggedIn: boolean;
   updatedAt?: string;
   levelCompletePending: boolean;
+  createdAt?: string;
+  isLocked: boolean;
 }
 
 interface GameContextType {
@@ -38,6 +40,7 @@ const defaultState: GameState = {
   username: "", email: "", score: 0, currentLevel: 1, currentQuestion: 1,
   startTime: "", elapsedTime: 0, completedAt: null, isLoggedIn: false,
   updatedAt: "", levelCompletePending: false,
+  createdAt: undefined, isLocked: false,
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -55,6 +58,8 @@ function mapUserToState(user: Record<string, unknown>): GameState {
     isLoggedIn: true,
     updatedAt: user.updatedAt ? String(user.updatedAt) : "",
     levelCompletePending: Boolean(user.levelCompletePending),
+    createdAt: user.createdAt ? String(user.createdAt) : undefined,
+    isLocked: Boolean(user.isLocked ?? false),
   };
 }
 
