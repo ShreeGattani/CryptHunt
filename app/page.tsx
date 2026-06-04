@@ -357,7 +357,7 @@ export default function LoginPage() {
 
             <p>
               WE WILL WATCH YOU FALL IN
-              LOVE WITH THE VOID. EHEHEHEHEHE (maybe clue)
+              LOVE WITH THE VOID. (l oryh lfhehduv)
             </p>
 
           </div>
