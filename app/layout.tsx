@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { GameProvider } from "./context/GameContext";
 import LockGuard from "../components/LockGuard";
+import { AudioProvider } from "../components/AudioManager";
 import "./globals.css";
 import "../components/topbar.css";
 import "../components/QuestionProgressBar.css";
@@ -34,11 +35,13 @@ export default function RootLayout({
       />
       <body className="min-h-full bg-zinc-950 text-zinc-100 flex flex-col font-sans crt-overlay selection:bg-red-950 selection:text-red-300">
         <div className="vhs-line"></div>
-        <GameProvider>
-          <LockGuard>
-            {children}
-          </LockGuard>
-        </GameProvider>
+        <AudioProvider>
+          <GameProvider>
+            <LockGuard>
+              {children}
+            </LockGuard>
+          </GameProvider>
+        </AudioProvider>
       </body>
     </html>
   );

@@ -191,9 +191,10 @@ export default function DashboardPage() {
                           : "candlecove"
                       }`}
                       className="enter-btn"
+                      style={isCompleted ? { fontWeight: 700, pointerEvents: "none", cursor: "default", opacity: 0.75 } : {}}
                     >
                       {isCompleted
-                        ? "[ REVISIT ]"
+                        ? "[ SEALED ]"
                         : state.currentQuestion > 1
                         ? "[ RESUME ]"
                         : "[ ENTER ]"}

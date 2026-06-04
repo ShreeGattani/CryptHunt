@@ -170,4 +170,31 @@ body {
   scrollbar-width: none;  /* Firefox */
 }
 
+/* Question text fade-in: triggered by key prop change on question elements */
+@keyframes cryptFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.question-animate {
+  animation: cryptFadeIn 0.45s ease forwards;
+}
+
+/* Level background fade transition: applied when bg image cycles */
+.bg-fade-out {
+  opacity: 0 !important;
+  transition: opacity 0.2s ease;
+}
+
+.bg-fade-in {
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
 

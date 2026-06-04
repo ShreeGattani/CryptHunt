@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useGame } from "../../context/GameContext";
 import TopBar from "../../../components/topbar";
@@ -9,9 +9,12 @@ import QuestionProgressBar from "../../../components/QuestionProgressBar";
 import "./ben.css";
 
 const LEVEL_ID = 3;
+const TOTAL_IMAGES = 12;
+const BG_KEY = "ben-bg";
 
 export default function BenPage() {
   const [bgImage, setBgImage] = useState("/images/ben/ben1.png");
+  const [bgFading, setBgFading] = useState(false);
   const [levelCompleteGate, setLevelCompleteGate] = useState(false);
   const router = useRouter();
 
@@ -22,11 +25,21 @@ export default function BenPage() {
   const [feedback, setFeedback] = useState<{ success: boolean; message: string } | null>(null);
 
   useEffect(() => {
-    const totalImages = 12;
-    let current = Number(localStorage.getItem("ben-bg")) || 1;
+    const current = Number(localStorage.getItem(BG_KEY)) || 1;
     setBgImage(`/images/ben/ben${current}.png`);
-    localStorage.setItem("ben-bg", String(current + 1 > totalImages ? 1 : current + 1));
-  }, [state.currentQuestion]);
+    localStorage.setItem(BG_KEY, String(current + 1 > TOTAL_IMAGES ? 1 : current + 1));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const cycleBg = useCallback(() => {
+    setBgFading(true);
+    setTimeout(() => {
+      const next = Number(localStorage.getItem(BG_KEY)) || 1;
+      setBgImage(`/images/ben/ben${next}.png`);
+      localStorage.setItem(BG_KEY, String(next + 1 > TOTAL_IMAGES ? 1 : next + 1));
+      setBgFading(false);
+    }, 200);
+  }, []);
 
   useEffect(() => {
     if (!isInitialized || !state.isLoggedIn) return;
@@ -47,6 +60,7 @@ export default function BenPage() {
     if (res.success) {
       setFeedback({ success: true, message: res.message });
       setInputAnswer("");
+      if (!res.isLevelComplete) cycleBg();
       if (res.isLevelComplete) setLevelCompleteGate(true);
     } else {
       setFeedback({ success: false, message: res.message });
@@ -54,7 +68,14 @@ export default function BenPage() {
   };
 
   return (
-    <div className="ben-container" style={{ backgroundImage: `url(${bgImage})` }}>
+    <div
+      className="ben-container"
+      style={{
+        backgroundImage: `url(${bgImage})`,
+        opacity: bgFading ? 0.35 : 1,
+        transition: "opacity 0.2s ease",
+      }}
+    >
       <TopBar isLevelPage={true} />
       <div className="ben-content vcr-font">
         {levelCompleteGate ? (
@@ -77,7 +98,7 @@ export default function BenPage() {
               <Image src="/images/divider.png" alt="divider" width={400} height={40} className="divider-img" />
               <QuestionProgressBar />
             </div>
-            <p className="cipher-text vcr-font">{currentQuestionData.text}</p>
+            <p key={currentQuestionData.id} className="cipher-text vcr-font question-animate">{currentQuestionData.text}</p>
             <div className="answer-section vcr-font">
               <div className="answer-header">
                 <Image src="/images/small-left.png" alt="divider" width={120} height={20} className="mini-divider-img" />

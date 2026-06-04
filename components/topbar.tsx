@@ -3,10 +3,12 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useGame } from "../app/context/GameContext";
-import { BookOpen, Trophy, LogOut, Home } from "lucide-react";
+import { useMusicPlayer } from "./AudioManager";
+import { BookOpen, Trophy, LogOut, Home, Volume2, VolumeX } from "lucide-react";
 
 export default function TopBar({ isLevelPage = false }: { isLevelPage?: boolean }) {
   const { state, logout } = useGame();
+  const { isMuted, toggleMute } = useMusicPlayer();
   const [isRulesOpen, setIsRulesOpen] = useState(false);
 
   if (!state.isLoggedIn) return null;
@@ -45,6 +47,13 @@ export default function TopBar({ isLevelPage = false }: { isLevelPage?: boolean 
         <Link href="/leaderboard" className="action-btn" title="Leaderboard">
           <Trophy size={18} />
         </Link>
+        <button
+          onClick={toggleMute}
+          className="action-btn"
+          title={isMuted ? "Unmute audio" : "Mute audio"}
+        >
+          {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+        </button>
         {isLevelPage ? (
           <Link href="/dashboard" className="action-btn" title="Back to Home">
             <Home size={18} />

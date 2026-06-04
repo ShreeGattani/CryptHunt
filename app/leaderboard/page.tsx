@@ -145,7 +145,7 @@ export default function LeaderboardPage() {
           LAST SYNC: {lastUpdated.toLocaleTimeString()}
         </div>*/}
           <p>
-            LOREM IPSUM DOREM BLAH BLAH SMILER JACK KILL
+            Welcome to CryptX Files
           </p>
         </div>
 

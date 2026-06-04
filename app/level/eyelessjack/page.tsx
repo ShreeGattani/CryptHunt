@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useGame } from "../../context/GameContext";
 import TopBar from "../../../components/topbar";
@@ -10,9 +10,11 @@ import "./eyelessjack.css";
 
 const TOTAL_IMAGES = 9;
 const LEVEL_ID = 2;
+const BG_KEY = "jack-bg";
 
 export default function EyelessJackPage() {
   const [bgIndex, setBgIndex] = useState(1);
+  const [bgFading, setBgFading] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [levelCompleteGate, setLevelCompleteGate] = useState(false);
   const router = useRouter();
@@ -23,13 +25,25 @@ export default function EyelessJackPage() {
   const [honeypot, setHoneypot] = useState("");
   const [feedback, setFeedback] = useState<{ success: boolean; message: string } | null>(null);
 
+  // Load initial bg from stored index
   useEffect(() => {
-    let current = Number(localStorage.getItem("jack-bg")) || 1;
+    const current = Number(localStorage.getItem(BG_KEY)) || 1;
     setBgIndex(current);
-    localStorage.setItem("jack-bg", String(current + 1 > TOTAL_IMAGES ? 1 : current + 1));
-  }, [state.currentQuestion]);
+    localStorage.setItem(BG_KEY, String(current + 1 > TOTAL_IMAGES ? 1 : current + 1));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => { setShowHint(false); }, [state.currentQuestion]);
+
+  const cycleBg = useCallback(() => {
+    setBgFading(true);
+    setTimeout(() => {
+      const next = Number(localStorage.getItem(BG_KEY)) || 1;
+      setBgIndex(next);
+      localStorage.setItem(BG_KEY, String(next + 1 > TOTAL_IMAGES ? 1 : next + 1));
+      setBgFading(false);
+    }, 200);
+  }, []);
 
   useEffect(() => {
     if (!isInitialized || !state.isLoggedIn) return;
@@ -53,6 +67,7 @@ export default function EyelessJackPage() {
       setFeedback({ success: true, message: res.message });
       setInputAnswer("");
       setShowHint(false);
+      if (!res.isLevelComplete) cycleBg();
       if (res.isLevelComplete) setLevelCompleteGate(true);
     } else {
       setFeedback({ success: false, message: res.message });
@@ -60,7 +75,14 @@ export default function EyelessJackPage() {
   };
 
   return (
-    <div className="ej-container" style={{ backgroundImage: `url(${bgImage})` }}>
+    <div
+      className="ej-container"
+      style={{
+        backgroundImage: `url(${bgImage})`,
+        opacity: bgFading ? 0.35 : 1,
+        transition: "opacity 0.2s ease",
+      }}
+    >
       <TopBar isLevelPage={true} />
       <div className="ej-content vcr-font">
         {levelCompleteGate ? (
@@ -83,7 +105,7 @@ export default function EyelessJackPage() {
               <Image src="/images/divider.png" alt="divider" width={400} height={40} className="divider-img" />
               <QuestionProgressBar />
             </div>
-            <p className="ej-cipher-text vcr-font">{currentQuestionData.text}</p>
+            <p key={currentQuestionData.id} className="ej-cipher-text vcr-font question-animate">{currentQuestionData.text}</p>
             <div className="ej-answer-section vcr-font">
               <div className="ej-answer-header">
                 <Image src="/images/small-left.png" alt="divider" width={120} height={20} className="mini-divider-img" />
