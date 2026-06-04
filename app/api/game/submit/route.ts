@@ -35,11 +35,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, message: "Game already completed." }, { status: 403 });
   }
 
-  let body: { answer?: string };
+  let body: { answer?: string; _cf?: string };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ success: false, message: "Invalid request body." }, { status: 400 });
+  }
+
+  // Honeypot: only filled by automated form-fillers, never by real users.
+  // Return an identical wrong-answer response — no signal that the trap fired.
+  if (typeof body._cf === "string" && body._cf.length > 0) {
+    return NextResponse.json({
+      success: false,
+      message: "ACCESS DENIED. Decryption key incorrect.",
+      isLevelComplete: false,
+    });
   }
 
   const answer = typeof body.answer === "string" ? body.answer.trim() : "";

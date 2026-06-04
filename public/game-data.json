@@ -1,0 +1,70 @@
+{
+  "_note": "crypthunt-game-data-cache-v1",
+  "levels": [
+    {
+      "id": 1,
+      "name": "Slender Man",
+      "theme": "forest",
+      "questions": [
+        { "q": 1, "points": 100, "answer": "forest" },
+        { "q": 2, "points": 100, "answer": "pages" },
+        { "q": 3, "points": 150, "answer": "static" },
+        { "q": 4, "points": 150, "answer": "operator" },
+        { "q": 5, "points": 200, "answer": "proxyman" },
+        { "q": 6, "points": 200, "answer": "marble" }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Eyeless Jack",
+      "theme": "hospital",
+      "questions": [
+        { "q": 1, "points": 100, "answer": "kidney" },
+        { "q": 2, "points": 100, "answer": "scalpel" },
+        { "q": 3, "points": 150, "answer": "hollow" },
+        { "q": 4, "points": 150, "answer": "nocturnal" },
+        { "q": 5, "points": 200, "answer": "stitches" },
+        { "q": 6, "points": 200, "answer": "hospital" }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Ben Drowned",
+      "theme": "zelda",
+      "questions": [
+        { "q": 1, "points": 100, "answer": "majora" },
+        { "q": 2, "points": 100, "answer": "drowned" },
+        { "q": 3, "points": 150, "answer": "cartridge" },
+        { "q": 4, "points": 150, "answer": "clocktown" },
+        { "q": 5, "points": 200, "answer": "elegy" },
+        { "q": 6, "points": 200, "answer": "statute" }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "The Puppeteer",
+      "theme": "strings",
+      "questions": [
+        { "q": 1, "points": 100, "answer": "strings" },
+        { "q": 2, "points": 100, "answer": "marionette" },
+        { "q": 3, "points": 150, "answer": "harvest" },
+        { "q": 4, "points": 150, "answer": "theatre" },
+        { "q": 5, "points": 200, "answer": "puppet" },
+        { "q": 6, "points": 200, "answer": "vessel" }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Candle Cove",
+      "theme": "television",
+      "questions": [
+        { "q": 1, "points": 100, "answer": "broadcast" },
+        { "q": 2, "points": 100, "answer": "pirate" },
+        { "q": 3, "points": 150, "answer": "skintaker" },
+        { "q": 4, "points": 150, "answer": "laugh" },
+        { "q": 5, "points": 200, "answer": "static" },
+        { "q": 6, "points": 200, "answer": "channel" }
+      ]
+    }
+  ]
+}

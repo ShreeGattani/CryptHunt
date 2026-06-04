@@ -20,6 +20,7 @@ export default function EyelessJackPage() {
   const { state, submitAnswer, exitLevelToDashboard, currentQuestionData, loadLevelQuestion, isInitialized } = useGame();
 
   const [inputAnswer, setInputAnswer] = useState("");
+  const [honeypot, setHoneypot] = useState("");
   const [feedback, setFeedback] = useState<{ success: boolean; message: string } | null>(null);
 
   useEffect(() => {
@@ -47,7 +48,7 @@ export default function EyelessJackPage() {
     setFeedback(null);
     if (!inputAnswer.trim()) { setFeedback({ success: false, message: "Answer cannot be empty." }); return; }
 
-    const res = await submitAnswer(inputAnswer);
+    const res = await submitAnswer(inputAnswer, honeypot);
     if (res.success) {
       setFeedback({ success: true, message: res.message });
       setInputAnswer("");
@@ -90,6 +91,17 @@ export default function EyelessJackPage() {
                 <Image src="/images/small-right.png" alt="divider" width={120} height={20} className="mini-divider-img reverse" />
               </div>
               <form onSubmit={handleSubmit} className="ej-answer-form">
+                {/* Honeypot: invisible to real users, catches automated form-fillers */}
+                <input
+                  type="text"
+                  name="key_fragment"
+                  value={honeypot}
+                  onChange={(e) => setHoneypot(e.target.value)}
+                  tabIndex={-1}
+                  aria-hidden="true"
+                  autoComplete="off"
+                  style={{ position: "absolute", left: "-9999px", top: "-9999px", width: "1px", height: "1px", overflow: "hidden", opacity: 0 }}
+                />
                 <input type="text" value={inputAnswer} onChange={(e) => setInputAnswer(e.target.value)} placeholder="Type your answer here [no spaces]..." className="ej-answer-input vcr-font" />
                 <button type="submit" className="ej-submit-btn vcr-font">SUBMIT</button>
               </form>

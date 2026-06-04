@@ -25,7 +25,7 @@ interface GameContextType {
   login: (email: string, passwordString: string) => Promise<{ success: boolean; message: string }>;
   register: (username: string, email: string, passwordString: string, otp: string) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
-  submitAnswer: (answer: string) => Promise<{ success: boolean; message: string; isLevelComplete: boolean }>;
+  submitAnswer: (answer: string, hp?: string) => Promise<{ success: boolean; message: string; isLevelComplete: boolean }>;
   exitLevelToDashboard: () => Promise<void>;
   resetGame: () => Promise<void>;
   loadLevelQuestion: (levelId: number) => Promise<{ levelCompletePending: boolean }>;
@@ -63,10 +63,28 @@ function mapUserToState(user: Record<string, unknown>): GameState {
   };
 }
 
+/**
+ * Deterministically maps each character to a visually similar but meaningless
+ * unicode symbol. Space and newline are preserved so layout is unchanged.
+ * Used to scramble question text when headless-browser automation is detected.
+ */
+function obfuscateText(text: string): string {
+  const glyphs = "▓░▒█▀▄■□▪▫●○◆◇★☆✦✧†‡×÷±∞≈≠≡∂∇∫∑∏";
+  return text
+    .split("")
+    .map((c) =>
+      c === " " || c === "\n" ? c : glyphs[c.charCodeAt(0) % glyphs.length]
+    )
+    .join("");
+}
+
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [state, setState] = useState<GameState>(defaultState);
   const [isInitialized, setIsInitialized] = useState(false);
   const [currentQuestionData, setCurrentQuestionData] = useState<PublicQuestion | null>(null);
+  // Detects headless-browser automation (Playwright / Puppeteer / Selenium).
+  // Initialized to false (SSR-safe); updated client-side in a useEffect.
+  const [isBotSession, setIsBotSession] = useState(false);
   const stateRef = useRef<GameState>(state);
   stateRef.current = state;
   const router = useRouter();
@@ -101,6 +119,22 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsInitialized(true);
       });
   }, [applyUser]);
+
+  // Detect headless-browser automation on the client side.
+  // navigator.webdriver is set to true by Playwright, Puppeteer, and Selenium.
+  // window.__b is set by the early-execution script in layout.tsx.
+  // When detected, isBotSession is flipped to true and subsequent renders
+  // will expose scrambled question text instead of the real content.
+  useEffect(() => {
+    try {
+      const w = window as unknown as { __b?: number };
+      if (w.__b || navigator.webdriver) {
+        setIsBotSession(true);
+      }
+    } catch {
+      // ignore — can only fail in SSR, which never reaches this useEffect
+    }
+  }, []);
 
   // Background sync: pull server state every 10s, push elapsedTime only
   useEffect(() => {
@@ -210,13 +244,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [applyUser]);
 
-  const submitAnswer = async (answer: string): Promise<{ success: boolean; message: string; isLevelComplete: boolean }> => {
+  const submitAnswer = async (answer: string, hp?: string): Promise<{ success: boolean; message: string; isLevelComplete: boolean }> => {
     try {
       const res = await fetch("/api/game/submit", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answer }),
+        // _cf is the honeypot field. Real users always send "", bots that
+        // auto-fill forms send the value they typed into the hidden input.
+        body: JSON.stringify({ answer, _cf: hp ?? "" }),
       });
       const json = await res.json();
 
@@ -258,6 +294,18 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const currentLevelData = creepypastaLevels.find((l) => l.id === state.currentLevel) || null;
 
+  // When a bot session is detected, replace displayed question text with
+  // deterministic unicode glyphs. The internal state is untouched; only
+  // what the component tree receives is scrambled.
+  const exposedQuestionData: PublicQuestion | null =
+    isBotSession && currentQuestionData
+      ? {
+          ...currentQuestionData,
+          text: obfuscateText(currentQuestionData.text),
+          hint: currentQuestionData.hint ? obfuscateText(currentQuestionData.hint) : currentQuestionData.hint,
+        }
+      : currentQuestionData;
+
   const formatTime = (totalSeconds: number) => {
     const hrs = Math.floor(totalSeconds / 3600);
     const mins = Math.floor((totalSeconds % 3600) / 60);
@@ -279,7 +327,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <GameContext.Provider value={{ state, login, register, logout, submitAnswer, exitLevelToDashboard, resetGame, loadLevelQuestion, currentLevelData, currentQuestionData, formatTime, formatDate, isInitialized }}>
+    <GameContext.Provider value={{ state, login, register, logout, submitAnswer, exitLevelToDashboard, resetGame, loadLevelQuestion, currentLevelData, currentQuestionData: exposedQuestionData, formatTime, formatDate, isInitialized }}>
       {children}
     </GameContext.Provider>
   );
