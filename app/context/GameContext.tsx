@@ -186,7 +186,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     router.push("/");
   };
 
-  const loadLevelQuestion = async (levelId: number): Promise<{ levelCompletePending: boolean }> => {
+  const loadLevelQuestion = useCallback(async (levelId: number): Promise<{ levelCompletePending: boolean }> => {
     try {
       const res = await fetch(`/api/game/question?levelId=${levelId}`, { credentials: "include" });
       const json = await res.json();
@@ -203,7 +203,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setCurrentQuestionData(null);
       return { levelCompletePending: false };
     }
-  };
+  }, [applyUser]);
 
   const submitAnswer = async (answer: string): Promise<{ success: boolean; message: string; isLevelComplete: boolean }> => {
     try {
