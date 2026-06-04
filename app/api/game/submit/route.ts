@@ -3,6 +3,7 @@ import { getAuthenticatedUser, toPublicUser } from "@/lib/server/auth";
 import { getQuestionPoints, isAnswerCorrect, MAX_LEVEL, QUESTIONS_PER_LEVEL } from "@/lib/server/game-data";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/server/rate-limit";
 import { requirePrismaClient } from "@/lib/server/prisma";
+import { logAttempt } from "@/lib/server/sheets-logger";
 
 /**
  * Validate an answer server-side. The answer is never sent to the client.
@@ -56,7 +57,18 @@ export async function POST(request: Request) {
     });
   }
 
-  if (!isAnswerCorrect(levelId, questionNumber, answer)) {
+  const isCorrect = isAnswerCorrect(levelId, questionNumber, answer);
+
+  logAttempt({
+    userId: user.id,
+    username: user.username,
+    levelId,
+    questionNumber,
+    submittedAnswer: answer,
+    isCorrect,
+  });
+
+  if (!isCorrect) {
     return NextResponse.json({ success: false, message: "ACCESS DENIED. Decryption key incorrect.", isLevelComplete: false });
   }
 
