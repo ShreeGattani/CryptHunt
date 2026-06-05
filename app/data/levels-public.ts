@@ -29,6 +29,7 @@ export interface PublicQuestion {
   hint?: string;
   image?: string;
   audio?: string;
+  file?: string;
   points: number;
   questionNumber: number;
   levelId: number;
