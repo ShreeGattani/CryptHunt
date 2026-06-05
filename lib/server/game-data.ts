@@ -6,6 +6,7 @@
 interface Question {
   id: number;
   text?: string;
+  hint?: string;
   image?: string;
   audio?: string;
   answer: string;
@@ -129,6 +130,7 @@ export const QUESTIONS_PER_LEVEL = 6;
 export interface PublicQuestion {
   id: number;
   text: string;
+  hint?: string;
   image?: string;
   audio?: string;
   points: number;
@@ -160,7 +162,7 @@ export function getPublicQuestion(
 
   return {
     id: q.id,
-    text: q.text,
+    text: q.text ?? "",
     hint: q.hint,
     image: q.image,
     audio: q.audio,

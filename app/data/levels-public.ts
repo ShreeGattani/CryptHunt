@@ -26,7 +26,9 @@ export const creepypastaLevels: LevelMeta[] = [
 export interface PublicQuestion {
   id: number;
   text: string;
-  hint: string;
+  hint?: string;
+  image?: string;
+  audio?: string;
   points: number;
   questionNumber: number;
   levelId: number;
