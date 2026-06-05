@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { attachSessionCookie, createSessionToken, hashSessionToken, toPublicUser } from "@/lib/server/auth";
+import { parseJsonBody } from "@/lib/server/parse-json-body";
 import { hashPassword } from "@/lib/server/password";
 import bcrypt from "bcryptjs";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/server/rate-limit";
@@ -7,7 +8,10 @@ import { requirePrismaClient } from "@/lib/server/prisma";
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (!parsed.ok) return parsed.response;
+    const body = parsed.body;
+
     const username = typeof body.username === "string" ? body.username.trim() : "";
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
     const password = typeof body.password === "string" ? body.password : "";

@@ -1,16 +1,27 @@
 import { NextResponse } from "next/server";
 import { attachSessionCookie, createSessionToken, hashSessionToken, toPublicUser } from "@/lib/server/auth";
+import { parseJsonBody } from "@/lib/server/parse-json-body";
 import { hashPassword, isLegacyPlaintext, verifyPassword } from "@/lib/server/password";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/server/rate-limit";
 import { requirePrismaClient } from "@/lib/server/prisma";
+import { ensureMinElapsed } from "@/lib/server/timing-pad";
 
 export async function POST(request: Request) {
+  const startedAt = Date.now();
+
   try {
-    const body = await request.json();
+    const parsed = await parseJsonBody(request);
+    if (!parsed.ok) {
+      await ensureMinElapsed(startedAt);
+      return parsed.response;
+    }
+    const body = parsed.body;
+
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
     const password = typeof body.password === "string" ? body.password : "";
 
     if (!email || !password) {
+      await ensureMinElapsed(startedAt);
       return NextResponse.json(
         { success: false, message: "Email and decryption key must be supplied." },
         { status: 400 }
@@ -19,12 +30,16 @@ export async function POST(request: Request) {
 
     const ip = getClientIp(request);
     const rate = checkRateLimit(`login:${ip}:${email}`, 5, 10 * 60_000);
-    if (!rate.allowed) return rateLimitResponse(rate.retryAfterSec);
+    if (!rate.allowed) {
+      await ensureMinElapsed(startedAt);
+      return rateLimitResponse(rate.retryAfterSec);
+    }
 
     const prisma = requirePrismaClient();
     const user = await prisma.user.findUnique({ where: { email } });
 
     if (!user || !(await verifyPassword(password, user.password))) {
+      await ensureMinElapsed(startedAt);
       return NextResponse.json(
         { success: false, message: "DECRYPTION DENIED. INVALID EMAIL OR PASSWORD KEY." },
         { status: 401 }
@@ -53,8 +68,10 @@ export async function POST(request: Request) {
       user: toPublicUser(updated),
     });
 
+    await ensureMinElapsed(startedAt);
     return attachSessionCookie(response, rawToken);
   } catch {
+    await ensureMinElapsed(startedAt);
     return NextResponse.json(
       { success: false, message: "Internal server authentication error." },
       { status: 500 }
