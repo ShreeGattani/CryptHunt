@@ -138,12 +138,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Background sync: pull server state every 10s, push elapsedTime only
   useEffect(() => {
-    if (!state.isLoggedIn || !isInitialized) return;
+    if (!state.isLoggedIn || !isInitialized || state.isLocked) return;
 
     const syncInterval = setInterval(async () => {
       try {
         const current = stateRef.current;
-        if (!current.isLoggedIn) return;
+        if (!current.isLoggedIn || current.isLocked) return;
 
         const pull = await fetch("/api/auth/sync", { credentials: "include" });
         if (pull.status === 401) {
@@ -170,17 +170,17 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, 10_000);
 
     return () => clearInterval(syncInterval);
-  }, [state.isLoggedIn, isInitialized, applyUser, router]);
+  }, [state.isLoggedIn, isInitialized, state.isLocked, applyUser, router]);
 
   // Server-side route guard (middleware also protects at edge)
   useEffect(() => {
     if (!isInitialized) return;
     if (!state.isLoggedIn && pathname !== "/" && !pathname.startsWith("/api")) {
       router.push("/");
-    } else if (state.isLoggedIn && pathname === "/") {
+    } else if (state.isLoggedIn && pathname === "/" && !state.isLocked) {
       router.push("/dashboard");
     }
-  }, [isInitialized, state.isLoggedIn, pathname, router]);
+  }, [isInitialized, state.isLoggedIn, state.isLocked, pathname, router]);
 
   const register = async (username: string, email: string, passwordString: string, otp: string): Promise<{ success: boolean; message: string }> => {
     try {
