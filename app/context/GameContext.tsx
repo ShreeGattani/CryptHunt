@@ -167,7 +167,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch {
         // non-fatal
       }
-    }, 10_000);
+    // 30 seconds: 250 users × 10s = 50 DB ops/sec saturates MongoDB free tier.
+    // At 30s the same 250 users produce ~17 ops/sec — well within M0 limits.
+    }, 30_000);
 
     return () => clearInterval(syncInterval);
   }, [state.isLoggedIn, isInitialized, state.isLocked, applyUser, router]);
