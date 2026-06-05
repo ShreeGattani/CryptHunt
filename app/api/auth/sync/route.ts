@@ -63,11 +63,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, message: "Invalid elapsedTime." }, { status: 400 });
   }
 
-  const prisma = requirePrismaClient();
-  const updated = await prisma.user.update({
-    where: { id: user.id },
-    data: { elapsedTime: Math.max(user.elapsedTime, elapsedTime) },
-  });
+  try {
+    const prisma = requirePrismaClient();
+    const updated = await prisma.user.update({
+      where: { id: user.id },
+      data: { elapsedTime: Math.max(user.elapsedTime, elapsedTime) },
+    });
 
-  return NextResponse.json({ success: true, user: toPublicUser(updated) });
+    return NextResponse.json({ success: true, user: toPublicUser(updated) });
+  } catch {
+    return NextResponse.json(
+      { success: false, message: "Sync temporarily unavailable. Try again shortly." },
+      { status: 503 }
+    );
+  }
 }
