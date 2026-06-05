@@ -100,8 +100,8 @@ const creepypastaLevels: LevelData[] = [
       { id: 2, text: "Do you remember your password?\n Maybe I left something for you there :)", answer: "navya", points: 100 },
       { id: 3, text: "01101001 01110011 01101110 00100111 01110100 00100000 01110100 01101000 01100101 00100000 01101101 01101111 01101111 01101110 00100000 01101100 01101111 01110110 01100101 01101100 01111001 00111111", answer: "monday", points: 100 },
       { id: 4, text: ":3", answer: "chipmunks", points: 100 },
-      { id: 5, text: "What do I slowly drain and consume from my victims to sustain my gray-skinned immortal body?", answer: "emotions", points: 100 },
-      { id: 6, text: "Complete my chilling ultimate declaration: 'They are all just my ______'.", answer: "puppets", points: 100 },
+      { id: 5, text: "A for?", answer: "rickastley", points: 100 },
+      { id: 6, text: "I may be in SNU now but heart still goes back to GUdXdcfK \n Remember who was the best mod? :P", answer: "mcflurry", points: 100 },
     ],
   },
   {

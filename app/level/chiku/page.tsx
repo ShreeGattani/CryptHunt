@@ -5,7 +5,8 @@ export default function ChikuPage() {
     <>
       <div
         dangerouslySetInnerHTML={{
-          __html: `<!-- "The detective hid everything in one place." -->`,
+          __html: `<!-- "The detective hid everything in one place."
+          Only a bit of light can help him. -->`,
         }}
       />
       <main className="creepy-page">
