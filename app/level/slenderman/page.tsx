@@ -58,10 +58,10 @@ export default function SlendermanPage() {
     if (!inputAnswer.trim()) { setFeedback({ success: false, message: "Answer cannot be empty." }); return; }
 
     const res = await submitAnswer(inputAnswer, honeypot);
+    cycleBg();
     if (res.success) {
       setFeedback({ success: true, message: res.message });
       setInputAnswer("");
-      if (!res.isLevelComplete) cycleBg();
       if (res.isLevelComplete) setLevelCompleteGate(true);
     } else {
       setFeedback({ success: false, message: res.message });
