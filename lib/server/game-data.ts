@@ -9,6 +9,7 @@ interface Question {
   hint?: string;
   image?: string;
   audio?: string;
+  file?: string;
   answer: string;
   points: number;
 }
@@ -38,12 +39,12 @@ const creepypastaLevels: LevelData[] = [
     glowClass: "pulse-cyan-glow",
     audioHint: "[STATIC WHITE NOISE INTENSIFIES]",
     questions: [
-      { id: 1, text: "I have no face, yet I watch you in the woods. I stand tall in the shadows. How many pages must you gather to survive my original game?", answer: "8", points: 100 },
-      { id: 2, text: "My presence is marked by a specific sign. What letter or character is inside the circle painted on the forest trees?", answer: "x", points: 120 },
-      { id: 3, text: "I stretch my dark appendages from my back to grasp and ensnare you. What are these black, elastic limbs called?", answer: "tentacles", points: 150 },
-      { id: 4, text: "A message carved into a tree trunk is encrypted with a Caesar Cipher (shift -3): 'WKH IRUHVW ZDWFKHV'. Decrypt it.", answer: "the forest watches", points: 200 },
-      { id: 5, text: "Before I appear in front of you, what visual distortion occurs on your electronic cameras or monitors?", answer: "static", points: 250 },
-      { id: 6, text: "Complete the warning message frantically scrawled on the final page: 'ALWAYS WATCHES, NO ______'.",  answer: "eyes", points: 300 },
+      { id: 1, image:"/images/material/download.png", answer: "marble", points: 100 },
+      { id: 2, text: "The proxies knew the truth long before the witnesses.", audio:"/images/material/entry08.wav", answer: "woodstock", points: 100 },
+      { id: 3, text: "It's not what is visible\n It is what it wanted\n https://youtu.be/MtN1YnoL46Q", answer: "seth", points: 100 },
+      { id: 4, file:"/images/material/phonebackup.zip", answer: "believers", points: 100 },
+      { id: 5, text: "Every year on 5 November, he posted the same photograph.\n Never explained.\n Never missed a year.\nI don't think it was a coincidence. I think it was a clue.\n He was a fan of cricket. And he hated calling people by their real names.", answer: "brian", points: 100 },
+      { id: 6, text: "/879",  answer: "knight", points: 100 },
     ],
   },
   {
@@ -133,6 +134,7 @@ export interface PublicQuestion {
   hint?: string;
   image?: string;
   audio?: string;
+  file?: string;
   points: number;
   questionNumber: number;
   levelId: number;
@@ -166,6 +168,7 @@ export function getPublicQuestion(
     hint: q.hint,
     image: q.image,
     audio: q.audio,
+    file: q.file,
     points: q.points,
     questionNumber,
     levelId,

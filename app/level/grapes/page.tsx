@@ -9,8 +9,6 @@ export default function GrapesPage() {
             <!-- The beginning of every memory matters. -->
             <!-- some collections were never archived -->
             <!-- look out for unverified docs -->
-            <!-- everyone remembers the cartoons -->
-            <!-- who remembers the audience? -->
           `,
         }}
       />

@@ -7,9 +7,7 @@ export default function DarkHorsePage() {
         <h1 className="creepy-title">ARCHIVED DRAFT</h1>
 
         <div className="creepy-list">
-          <div className="creepy-row">Three witnesses entered.</div>
-          <div className="creepy-row">Their stories became one.</div>
-          <div className="creepy-row">Add them together.</div>
+          <div className="creepy-row">Add it together.</div>
           <div className="creepy-row">One witness lied.</div>
           <div className="creepy-row">Remove him.</div>
           <div className="creepy-row">The truth stands alone.</div>
@@ -24,7 +22,7 @@ export default function DarkHorsePage() {
             rel="noopener noreferrer"
             style={{ color: "inherit", textDecoration: "underline" }}
           >
-            https://youtu.be/-Ru39FMzIvs
+            https://youtu.be/-Ru39FMzIvs (8:28)
           </a>
         </p>
       </section>

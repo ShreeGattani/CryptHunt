@@ -118,6 +118,27 @@ export default function BenPage() {
     </audio>
   </div>
 )}
+{currentQuestionData.file && (
+  <div className="file-section">
+    <a
+      href={currentQuestionData.file}
+      download
+      className="file-card"
+    >
+      <div className="file-icon">📁</div>
+
+      <div className="file-info">
+        <span className="file-name">
+          recovered_archive.zip
+        </span>
+
+        <span className="file-type">
+          RECOVERED FILES
+        </span>
+      </div>
+    </a>
+  </div>
+)}
             <div className="answer-section vcr-font">
               <div className="answer-header">
                 <Image src="/images/small-left.png" alt="divider" width={120} height={20} className="mini-divider-img" />
