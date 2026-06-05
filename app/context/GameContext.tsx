@@ -136,9 +136,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  // Background sync: pull server state every 10s, push elapsedTime only
+  // Background sync: pull server state every 30s, push elapsedTime only.
+  // Locked users skip the interval entirely — they cannot write game state
+  // before the hunt starts, and the LockGuard UI already handles their flow.
   useEffect(() => {
-    if (!state.isLoggedIn || !isInitialized || state.isLocked) return;
+    if (!state.isLoggedIn || !isInitialized) return;
+    if (state.isLocked) return;
 
     const syncInterval = setInterval(async () => {
       try {
@@ -172,7 +175,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, 30_000);
 
     return () => clearInterval(syncInterval);
-  }, [state.isLoggedIn, isInitialized, state.isLocked, applyUser, router]);
+  }, [state.isLoggedIn, isInitialized, applyUser, router]);
 
   // Server-side route guard (middleware also protects at edge)
   useEffect(() => {

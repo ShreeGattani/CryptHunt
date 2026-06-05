@@ -84,7 +84,9 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-
+  // The / → /dashboard redirect for logged-in users is handled client-side in
+  // GameContext. Edge middleware cannot check lock status without DB access;
+  // redirecting here would loop locked users between / and /dashboard.
 
   return NextResponse.next();
 }
