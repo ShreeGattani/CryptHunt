@@ -1,0 +1,161 @@
+:root {
+  --text: #e8e8e8;
+  --muted: #8c8c8c;
+  --red: #b52a2a;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.creepy-page {
+  min-height: 100vh;
+
+  background: url("/images/backlinkbg.png")
+    center center / cover no-repeat;
+
+  font-family: "vcr-mono", monospace;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  position: relative;
+}
+
+.creepy-page::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  background: rgba(0, 0, 0, 0.55);
+
+  pointer-events: none;
+}
+
+.creepy-card {
+  position: relative;
+  z-index: 2;
+
+  width: min(420px, 90vw);
+
+  background: rgba(0, 0, 0, 0.7);
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  padding: 1rem;
+
+  backdrop-filter: blur(4px);
+
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+}
+
+.creepy-title {
+  font-size: 1rem;
+
+  color: white;
+
+  margin-bottom: 0.8rem;
+
+  letter-spacing: 1px;
+
+  text-transform: uppercase;
+}
+
+.creepy-list {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.creepy-row {
+  padding: 0.45rem 0.75rem;
+
+  font-size: 0.85rem;
+
+  color: var(--text);
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.creepy-row:last-child {
+  border-bottom: none;
+}
+
+.redacted {
+  color: var(--red);
+
+  letter-spacing: 2px;
+}
+
+.creepy-note {
+  color: var(--muted);
+
+  font-size: 0.75rem;
+
+  margin-top: 0.75rem;
+
+  margin-bottom: 0.75rem;
+}
+
+.file-card {
+  display: flex;
+
+  align-items: center;
+
+  gap: 0.75rem;
+
+  text-decoration: none;
+
+  background: rgba(255, 255, 255, 0.03);
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  padding: 0.7rem;
+
+  transition: 0.2s;
+}
+
+.file-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.file-icon {
+  font-size: 1.2rem;
+}
+
+.file-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.file-name {
+  color: white;
+  font-size: 0.85rem;
+}
+
+.file-type {
+  color: #7d7d7d;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+}
+
+@media (max-width: 600px) {
+  .creepy-card {
+    width: 95vw;
+    padding: 0.8rem;
+  }
+
+  .creepy-row {
+    font-size: 0.8rem;
+  }
+}
+
+p{
+    margin: 10px;
+}
+
+h1{
+    margin: 10px;
+}

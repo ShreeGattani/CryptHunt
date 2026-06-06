@@ -31,7 +31,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 50px;
+  margin-bottom: 25px;
 }
 
 .title-section h1 {
@@ -46,7 +46,7 @@
   text-align: center;
   font-size: 19px;
   max-width: 700px;
-  margin-bottom: 50px;
+  margin-bottom: 25px;
 }
 
 /* ANSWER SECTION */
@@ -78,7 +78,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
+  gap: 0px;
 }
 
 /* INPUT */
@@ -144,4 +144,68 @@
 
 .feedback.error {
   color: #f87171;
+}
+
+.question-image{
+  margin-bottom: 25px;
+}
+.audio-section{
+  margin-bottom: 25px;
+}
+
+/*file card*/
+.file-section {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.file-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 12px 18px;
+  width: fit-content;
+
+  text-decoration: none;
+
+  background: rgba(20, 20, 20, 0.85);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  border-radius: 10px;
+
+  box-shadow: 0 0 12px rgba(255, 0, 0, 0.15);
+
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.file-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 0, 0, 0.7);
+  box-shadow: 0 0 18px rgba(255, 0, 0, 0.35);
+}
+
+.file-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.file-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.file-name {
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.file-type {
+  color: #b44444;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  margin-top: 2px;
 }

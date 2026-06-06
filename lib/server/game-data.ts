@@ -5,8 +5,11 @@
 
 interface Question {
   id: number;
-  text: string;
-  hint: string;
+  text?: string;
+  hint?: string;
+  image?: string;
+  audio?: string;
+  file?: string;
   answer: string;
   points: number;
 }
@@ -36,12 +39,12 @@ const creepypastaLevels: LevelData[] = [
     glowClass: "pulse-cyan-glow",
     audioHint: "[STATIC WHITE NOISE INTENSIFIES]",
     questions: [
-      { id: 1, text: "I have no face, yet I watch you in the woods. I stand tall in the shadows. How many pages must you gather to survive my original game?", hint: "It's a single digit number between 5 and 10.", answer: "8", points: 100 },
-      { id: 2, text: "My presence is marked by a specific sign. What letter or character is inside the circle painted on the forest trees?", hint: "Think of a cross, or a common algebraic variable.", answer: "x", points: 120 },
-      { id: 3, text: "I stretch my dark appendages from my back to grasp and ensnare you. What are these black, elastic limbs called?", hint: "Similar to what an octopus has.", answer: "tentacles", points: 150 },
-      { id: 4, text: "A message carved into a tree trunk is encrypted with a Caesar Cipher (shift -3): 'WKH IRUHVW ZDWFKHV'. Decrypt it.", hint: "Subtract 3 positions from each letter (e.g., W becomes T, K becomes H).", answer: "the forest watches", points: 200 },
-      { id: 5, text: "Before I appear in front of you, what visual distortion occurs on your electronic cameras or monitors?", hint: "Starts with 'S'. Old analogue television signal noise.", answer: "static", points: 250 },
-      { id: 6, text: "Complete the warning message frantically scrawled on the final page: 'ALWAYS WATCHES, NO ______'.", hint: "I have no face. I see all but have no...", answer: "eyes", points: 300 },
+      { id: 1, image:"/images/material/download.png", answer: "marble", points: 100 },
+      { id: 2, text: "The proxies knew the truth long before the witnesses.", audio:"/images/material/entry08.wav", answer: "tuscaloosa", points: 100 },
+      { id: 3, text: "It's not what is visible\n It is what it wanted\n https://youtu.be/MtN1YnoL46Q", answer: "seth", points: 100 },
+      { id: 4, file:"/images/material/phonebackup.zip", answer: "believers", points: 100 },
+      { id: 5, text: "Every year on 5 November, he posted the same photograph.\n Never explained.\n Never missed a year.\nI don't think it was a coincidence. I think it was a clue.\n He was a fan of cricket. And he hated calling people by their real names.", answer: "brian", points: 100 },
+      { id: 6, text: "/879",  answer: "knight", points: 100 },
     ],
   },
   {
@@ -55,12 +58,18 @@ const creepypastaLevels: LevelData[] = [
     glowClass: "pulse-cyan-glow",
     audioHint: "[DRIPPING WET SOUNDS, BREATHING]",
     questions: [
-      { id: 1, text: "I wear a signature blue mask with empty eye sockets. What color is the thick, dark liquid that continuously drips from those hollow pits?", hint: "Deepest dark. The color of midnight or tar.", answer: "black", points: 150 },
-      { id: 2, text: "I am a nocturnal harvester. Which bean-shaped organ do I sneak into bedrooms to surgically extract from my victims?", hint: "Humans have two of these in the renal system. Jack loves to eat them.", answer: "kidney", points: 180 },
-      { id: 3, text: "With what small, razor-sharp surgical tool do I make my precise incisions?", hint: "Standard doctor's blade.", answer: "scalpel", points: 200 },
-      { id: 4, text: "On Jack's blood-stained desk, you find binary code: '01001100 01001001 01010110 01000101 01010010'. Convert it to ASCII text.", hint: "Starts with L, ends with R. Another major organ Jack targets.", answer: "liver", points: 250 },
-      { id: 5, text: "My iconic blue mask has no nostrils or eyes. What dark, supple material is this mask crafted from?", hint: "Animal hide processed for garments.", answer: "leather", points: 280 },
-      { id: 6, text: "Lore states that Jack was a student who served as a soldier in which historical global war before his tragic transformation?", hint: "Use initials or Roman numerals (e.g., WWI or World War 1).", answer: "wwi", points: 350 },
+      // Q1: ASCII sequence spells "Jack Nylas" → hunt leads through /jacknylas → kidney
+      { id: 1, text: "74 97 99 107 32 78 121 108 97 115", answer: "kidney", points: 100 },
+      // Q2: frame.xyz cipher chain → /warding spectrogram → A1Z26 → PARASITE
+      { id: 2, text: "frame.xyz\nthe static has ruined the file\nyou must restore it", answer: "parasite", points: 100 },
+      // Q3: log.png + pastebin → beginnings of every step → EDWIN dead end + MITCH dead end → brothers
+      { id: 3, text: "seek the beginnings of every step or the numbers?", image: "/images/material/log.png", answer: "brothers", points: 100 },
+      // Q4: autopsy.png — answer TBD, fill in before hunt
+      { id: 4, image: "/images/material/autopsy.png", answer: "TODO_FILL_ANSWER", points: 100 },
+      // Q5: shifted from Ben Drowned — /apple rickroll → rick astley → never gonna give you up
+      { id: 5, text: "A for?", answer: "rickastley", points: 100 },
+      // Q6: shifted from Puppeteer Q1 — Phineas and Ferb cipher chain → perry
+      { id: 6, text: "'Everything's better in Boston'\n 65+55+82+121+78+122+69+99 finding a good way to spend it", answer: "perry", points: 100 },
     ],
   },
   {
@@ -74,12 +83,12 @@ const creepypastaLevels: LevelData[] = [
     glowClass: "pulse-red-glow",
     audioHint: "[GLITCHED OCARINA REVERSED CHORDS]",
     questions: [
-      { id: 1, text: "The cartridge was gold, blank, and bought at a shady garage sale. What N64 Legend of Zelda title was hacked by my spirit?", hint: "Features a falling moon and a 3-day cycle.", answer: "majora's mask", points: 200 },
-      { id: 2, text: "I was a young boy who met a watery end. What element took my life and now floods your game files?", hint: "H2O.", answer: "water", points: 220 },
-      { id: 3, text: "When the game glitches, an eerie, hollow statue of Link spawns, tracking your movements. What is the name of this creepy statue/song item?", hint: "Elegy of _______.", answer: "emptiness", points: 250 },
-      { id: 4, text: "Ben displays a reversed text warning: 'TAHT ENOD EVAH T'NDLUOHS UOY'. What is the corrected sentence?", hint: "Read it from right to left, letter by letter. Include punctuation.", answer: "you shouldn't have done that", points: 300 },
-      { id: 5, text: "What is the alias of the creepy old seller who handed over the cursed cartridge to Jadusable?", hint: "Simply 'old man' or 'the old man'.", answer: "old man", points: 320 },
-      { id: 6, text: "What beautiful but eerie ocarina melody, when played in reverse, triggers my presence and digital drowning?", hint: "Song of ________.", answer: "healing", points: 400 },
+      { id: 1, text: "The children remembered the episode. The episode remembered them.", file:"/images/material/phonebackup.zip", answer: "viewer", points: 100 },
+      { id: 2, text: "I was a young boy who met a watery end. What element took my life and now floods your game files?", image:"/images/material/audience.png", answer: "water", points: 220 },
+      { id: 3, text: "When the game glitches, an eerie, hollow statue of Link spawns, tracking your movements. What is the name of this creepy statue/song item?", answer: "emptiness", points: 250 },
+      { id: 4, text: "Ben displays a reversed text warning: 'TAHT ENOD EVAH T'NDLUOHS UOY'. What is the corrected sentence?", answer: "you shouldn't have done that", points: 300 },
+      { id: 5, text: "What is the alias of the creepy old seller who handed over the cursed cartridge to Jadusable?", answer: "old man", points: 320 },
+      { id: 6, text: "What beautiful but eerie ocarina melody, when played in reverse, triggers my presence and digital drowning?", answer: "healing", points: 400 },
     ],
   },
   {
@@ -93,12 +102,12 @@ const creepypastaLevels: LevelData[] = [
     glowClass: "pulse-red-glow",
     audioHint: "[CREAKING WOODEN JOINTS, COLD LAUGHTER]",
     questions: [
-      { id: 1, text: "My eyes glow brightly, matching the color of the strings I use to lock onto your limbs. What color is this?", hint: "The color of precious metal 79.", answer: "gold", points: 250 },
-      { id: 2, text: "Before ending my own life and becoming The Puppeteer, what was my human name?", hint: "First name is Jonathan, last name is...", answer: "jonathan blake", points: 280 },
-      { id: 3, text: "I feed on target emotions until my victims lose hope. What are the strings that slide from my fingers made of?", hint: "They glow. They are made of telekinetic _______.", answer: "strings", points: 320 },
-      { id: 4, text: "Solve this anagram from the theater pamphlet: 'REMNATOIET'. (Clue: A puppet operated by strings).", hint: "Starts with M, ends with E.", answer: "marionette", points: 350 },
-      { id: 5, text: "What do I slowly drain and consume from my victims to sustain my gray-skinned immortal body?", hint: "Feelings, joy, depression. They are human...", answer: "emotions", points: 380 },
-      { id: 6, text: "Complete my chilling ultimate declaration: 'They are all just my ______'.", hint: "Synonym for marionettes.", answer: "puppets", points: 450 },
+      { id: 1, text: "'Everything's better in Boston'\n 65+55+82+121+78+122+69+99 finding a good way to spend it", answer: "perry", points: 100 },
+      { id: 2, text: "Do you remember your password?\n Maybe I left something for you there :)", answer: "navya", points: 100 },
+      { id: 3, text: "01101001 01110011 01101110 00100111 01110100 00100000 01110100 01101000 01100101 00100000 01101101 01101111 01101111 01101110 00100000 01101100 01101111 01110110 01100101 01101100 01111001 00111111", answer: "monday", points: 100 },
+      { id: 4, text: ":3", answer: "chipmunks", points: 100 },
+      { id: 5, text: "Shark tank but not shark tank", answer: "shikarishambhu", points: 100 },
+      { id: 6, text: "I may be in SNU now but heart still goes back to GUdXdcfK \n Remember who was the best mod? :P", answer: "mcflurry", points: 100 },
     ],
   },
   {
@@ -112,12 +121,12 @@ const creepypastaLevels: LevelData[] = [
     glowClass: "pulse-red-glow",
     audioHint: "[DISTORTED OCEAN WAVES, STATIC REVERB]",
     questions: [
-      { id: 1, text: "What is the name of this haunted, fictional pirate puppet show that children watched in the 1970s?", hint: "The title of Level 5.", answer: "candle cove", points: 300 },
-      { id: 2, text: "I am a skeleton puppet wearing a top hat who speaks in a high-pitched voice and grinds your bones. Who am I?", hint: "The Skin-______.", answer: "skintaker", points: 350 },
-      { id: 3, text: "The main pirate ship in the show has a wooden talking face that constantly giggles. What is the ship's name?", hint: "Starts with 'L'. Relates to laughter.", answer: "laughingstock", points: 380 },
-      { id: 4, text: "The Skin-Taker doesn't talk normal. How does his wooden skeleton jaw slide to speak?", hint: "Not up and down, but side to...", answer: "side to side", points: 420 },
-      { id: 5, text: "A mother recalls that when the show came on, her daughter sat and watched static for how many minutes?", hint: "Half an hour. Type as a number or words (e.g. '30 minutes' or '30').", answer: "30", points: 480 },
-      { id: 6, text: "What does the Skin-Taker whisper that he will do to the children's skin once they enter his cove?", hint: "He wants to 'grind' it. What does he do to it? 'To grind your...' or 'grind it'.", answer: "grind it", points: 600 },
+      { id: 1, text: "The children remembered the episode. The episode remembered them.", answer: "candle cove", points: 100 },
+      { id: 2, text: "I am a skeleton puppet wearing a top hat who speaks in a high-pitched voice and grinds your bones. Who am I?", answer: "skintaker", points: 100 },
+      { id: 3, text: "The main pirate ship in the show has a wooden talking face that constantly giggles. What is the ship's name?", answer: "laughingstock", points: 100},
+      { id: 4, text: "The Skin-Taker doesn't talk normal. How does his wooden skeleton jaw slide to speak?", answer: "side to side", points: 100 },
+      { id: 5, text: "A mother recalls that when the show came on, her daughter sat and watched static for how many minutes?", answer: "30", points: 100},
+      { id: 6, text: "What does the Skin-Taker whisper that he will do to the children's skin once they enter his cove?", answer: "grind it", points: 100 },
     ],
   },
 ];
@@ -128,7 +137,10 @@ export const QUESTIONS_PER_LEVEL = 6;
 export interface PublicQuestion {
   id: number;
   text: string;
-  hint: string;
+  hint?: string;
+  image?: string;
+  audio?: string;
+  file?: string;
   points: number;
   questionNumber: number;
   levelId: number;
@@ -149,10 +161,24 @@ function getQuestionRecord(levelId: number, questionNumber: number): Question | 
 }
 
 /** Returns the current question with no answer field. */
-export function getPublicQuestion(levelId: number, questionNumber: number): PublicQuestion | null {
+export function getPublicQuestion(
+  levelId: number,
+  questionNumber: number
+): PublicQuestion | null {
   const q = getQuestionRecord(levelId, questionNumber);
   if (!q) return null;
-  return { id: q.id, text: q.text, hint: q.hint, points: q.points, questionNumber, levelId };
+
+  return {
+    id: q.id,
+    text: q.text ?? "",
+    hint: q.hint,
+    image: q.image,
+    audio: q.audio,
+    file: q.file,
+    points: q.points,
+    questionNumber,
+    levelId,
+  };
 }
 
 /** Server-side answer validation. */
