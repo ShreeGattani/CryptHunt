@@ -15,7 +15,7 @@ const BG_KEY = "slender-bg";
 export default function SlendermanPage() {
   const [bgImage, setBgImage] = useState("/images/slenderman/man1.png");
   const [bgFading, setBgFading] = useState(false);
-  const [levelCompleteGate, setLevelCompleteGate] = useState(true);
+  const [levelCompleteGate, setLevelCompleteGate] = useState(false);
   const router = useRouter();
 
   const { state, submitAnswer, exitLevelToDashboard, currentQuestionData, loadLevelQuestion, isInitialized } = useGame();
@@ -46,7 +46,7 @@ export default function SlendermanPage() {
     if (!isInitialized || !state.isLoggedIn) return;
     if (state.currentLevel !== LEVEL_ID) { router.push("/dashboard"); return; }
     loadLevelQuestion(LEVEL_ID).then(({ levelCompletePending }) => {
-      if (levelCompletePending) setLevelCompleteGate(true);
+      setLevelCompleteGate(levelCompletePending);
     });
   }, [isInitialized, state.isLoggedIn, state.currentLevel, router, loadLevelQuestion]);
 
