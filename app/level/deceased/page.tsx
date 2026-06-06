@@ -24,7 +24,7 @@ export default function DeceasedPage() {
 
         <div className="creepy-list">
           <div className="creepy-row">Location Last Seen:</div>
-          <div className="creepy-row">34.1319, -84.5162</div>
+          <div className="creepy-row">33.2746, -87.5757</div>
         </div>
       </section>
     </main>

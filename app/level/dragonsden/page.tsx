@@ -11,7 +11,7 @@ export default function DragonsDenPage() {
       <main className="creepy-page">
         <section className="creepy-card">
           <img
-            src="/images/material/dragonsden.png"
+            src="/images/material/dragonsden.jpeg"
             alt="Dragons Den"
             style={{ width: "100%", display: "block" }}
           />

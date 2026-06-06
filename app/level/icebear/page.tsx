@@ -6,7 +6,7 @@ export default function IcebearPage() {
       <section className="creepy-card">
         <img
           src="/images/material/liamsteg.png"
-          alt="Icebear"
+          alt="liamsteg"
           style={{ width: "100%", display: "block" }}
         />
       </section>

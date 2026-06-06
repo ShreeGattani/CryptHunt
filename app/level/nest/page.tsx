@@ -6,16 +6,19 @@ export default function NestPage() {
       <div
         dangerouslySetInnerHTML={{
           __html: `
-            <!-- focus on the role -->
-            <!-- not the person -->
             <!-- the answer obeyed -->
             <!-- the answer served -->
+            <!-- not the leader -->
           `,
         }}
       />
       <main
         className="creepy-page"
-        style={{ alignItems: "flex-start", paddingTop: "2rem", paddingBottom: "2rem" }}
+        style={{
+          alignItems: "flex-start",
+          paddingTop: "2rem",
+          paddingBottom: "2rem",
+        }}
       >
         <section className="creepy-card">
           <div className="creepy-list">
@@ -59,16 +62,25 @@ export default function NestPage() {
               * The person linked to the WATCHTOWER carried evidence recovered from a different location.
             </div>
             <div className="creepy-row">
-              * Only one suspect could realistically have acted on behalf of another.
+              * The final suspect in the timeline was neither ALEX nor TIM.
+            </div>
+            <div className="creepy-row">
+              * JAY was not the final suspect in the timeline.
+            </div>
+            <div className="creepy-row">
+              * The suspect connected to the CAMERA was the only person who could plausibly have acted on someone else's behalf.
             </div>
           </div>
 
-          <div style={{ height: "50vh" }} />
+          <div style={{ height: "25px" }} />
 
           <div className="creepy-list">
             <div className="creepy-row">The detective concluded</div>
             <div className="creepy-row">the figure was never acting alone.</div>
-            <div className="creepy-row" style={{ paddingTop: "0.5rem", paddingBottom: "0.5rem" }}>
+            <div
+              className="creepy-row"
+              style={{ paddingTop: "10px", paddingBottom: "10px" }}
+            >
               The suspect was?
             </div>
           </div>
@@ -76,7 +88,11 @@ export default function NestPage() {
           <img
             src="/images/material/evidence.png"
             alt="Evidence"
-            style={{ width: "100%", display: "block", marginTop: "1rem" }}
+            style={{
+              width: "100%",
+              display: "block",
+              marginTop: "1rem",
+            }}
           />
         </section>
       </main>
