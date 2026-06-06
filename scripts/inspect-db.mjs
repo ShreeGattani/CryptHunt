@@ -1,6 +1,30 @@
 import { MongoClient, ObjectId } from 'mongodb';
 
-const uri = "mongodb+srv://user:TxdZ0RDEk6pwK1ma@cluster0.aetqwrw.mongodb.net/crypthunt?retryWrites=true&w=majority";
+import fs from 'fs';
+import path from 'path';
+
+// Simple fallback to load .env if process.env.DATABASE_URL is not set
+if (!process.env.DATABASE_URL) {
+  try {
+    const envPath = path.resolve(process.cwd(), '.env');
+    if (fs.existsSync(envPath)) {
+      const envContent = fs.readFileSync(envPath, 'utf-8');
+      const match = envContent.match(/^DATABASE_URL=["']?([^"'\r\n]+)["']?/m);
+      if (match && match[1]) {
+        process.env.DATABASE_URL = match[1];
+      }
+    }
+  } catch (e) {
+    // Ignore error loading .env
+  }
+}
+
+const uri = process.env.DATABASE_URL;
+if (!uri) {
+  console.error("Error: DATABASE_URL environment variable is not defined.");
+  console.error("Please define it in your environment or in a .env file.");
+  process.exit(1);
+}
 const client = new MongoClient(uri);
 
 async function main() {
