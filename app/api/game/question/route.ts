@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAuthenticatedUser, toPublicUser, checkIsLocked } from "@/lib/server/auth";
+import { getAuthenticatedUser, toPublicUser, checkIsLocked, getLockErrorMessage } from "@/lib/server/auth";
 import { getPublicQuestion, MAX_LEVEL } from "@/lib/server/game-data";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/server/rate-limit";
 
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
 
   if (checkIsLocked(user.createdAt)) {
     return NextResponse.json(
-      { success: false, message: "HUNT HAS NOT STARTED. ACCESS DENIED UNTIL JUNE 6, 12:00 PM IST." },
+      { success: false, message: getLockErrorMessage(user.createdAt) },
       { status: 403 }
     );
   }
