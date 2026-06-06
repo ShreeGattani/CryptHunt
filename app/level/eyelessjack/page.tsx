@@ -91,6 +91,9 @@ export default function EyelessJackPage() {
               <h1>LEVEL SECURED</h1>
               <Image src="/images/divider.png" alt="divider" width={400} height={40} className="divider-img" />
             </div>
+            <p className="vcr-font text-red-500 font-bold tracking-[0.2em] text-2xl uppercase animate-pulse" style={{ color: "#ef4444", fontSize: "24px", letterSpacing: "0.2em", marginBottom: "1.5rem" }}>
+              [ or ]
+            </p>
             <p className="ej-cipher-text vcr-font">ALL 6 ORGANS EXTRACTED. JACK IS SATISFIED. EXIT TO THE MATRIX.</p>
             <div className="ej-answer-section vcr-font">
               <button onClick={() => exitLevelToDashboard()} className="ej-submit-btn vcr-font" style={{ width: "100%", marginTop: "1rem" }}>

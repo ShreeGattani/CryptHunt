@@ -15,7 +15,7 @@ const BG_KEY = "slender-bg";
 export default function SlendermanPage() {
   const [bgImage, setBgImage] = useState("/images/slenderman/man1.png");
   const [bgFading, setBgFading] = useState(false);
-  const [levelCompleteGate, setLevelCompleteGate] = useState(false);
+  const [levelCompleteGate, setLevelCompleteGate] = useState(true);
   const router = useRouter();
 
   const { state, submitAnswer, exitLevelToDashboard, currentQuestionData, loadLevelQuestion, isInitialized } = useGame();
@@ -29,7 +29,7 @@ export default function SlendermanPage() {
     const current = Number(localStorage.getItem(BG_KEY)) || 1;
     setBgImage(`/images/slenderman/man${current}.png`);
     localStorage.setItem(BG_KEY, String(current + 1 > TOTAL_IMAGES ? 1 : current + 1));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const cycleBg = useCallback(() => {
@@ -86,6 +86,9 @@ export default function SlendermanPage() {
               <h1>LEVEL SECURED</h1>
               <Image src="/images/divider.png" alt="divider" width={400} height={40} className="divider-img" />
             </div>
+            <p className="vcr-font text-red-500 font-bold tracking-[0.2em] text-2xl uppercase animate-pulse" style={{ color: "#ef4444", fontSize: "24px", letterSpacing: "0.2em", marginBottom: "1.5rem" }}>
+              [ lucky ]
+            </p>
             <p className="cipher-text vcr-font">ALL 6 PAGES COLLECTED. THE FOREST IS SILENT. EXIT NOW.</p>
             <div className="answer-section vcr-font">
               <button onClick={() => exitLevelToDashboard()} className="submit-btn vcr-font" style={{ width: "100%", marginTop: "1rem" }}>

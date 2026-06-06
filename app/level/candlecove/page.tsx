@@ -24,11 +24,28 @@ export default function CandleCovePage() {
   const [honeypot, setHoneypot] = useState("");
   const [feedback, setFeedback] = useState<{ success: boolean; message: string } | null>(null);
 
+  const [finalSentenceInput, setFinalSentenceInput] = useState("");
+  const [finalSentenceFeedback, setFinalSentenceFeedback] = useState<{ success: boolean; message: string } | null>(null);
+
+  const handleFinalSentenceSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFinalSentenceFeedback(null);
+    if (!finalSentenceInput.trim()) {
+      setFinalSentenceFeedback({ success: false, message: "Decryption key sentence cannot be empty." });
+      return;
+    }
+
+    const res = await exitLevelToDashboard(finalSentenceInput);
+    if (!res.success) {
+      setFinalSentenceFeedback({ success: false, message: res.message });
+    }
+  };
+
   useEffect(() => {
     const current = Number(localStorage.getItem(BG_KEY)) || 1;
     setBgImage(`/images/candlecove/candle${current}.png`);
     localStorage.setItem(BG_KEY, String(current + 1 > TOTAL_IMAGES ? 1 : current + 1));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const cycleBg = useCallback(() => {
@@ -84,11 +101,41 @@ export default function CandleCovePage() {
               <h1>LEVEL SECURED</h1>
               <Image src="/images/divider.png" alt="divider" width={400} height={40} className="divider-img" />
             </div>
+            <p className="vcr-font text-red-500 font-bold tracking-[0.2em] text-2xl uppercase animate-pulse" style={{ color: "#ef4444", fontSize: "24px", letterSpacing: "0.2em", marginBottom: "1.5rem" }}>
+              [ survived ]
+            </p>
             <p className="cipher-text vcr-font">THE BROADCAST ENDS. ALL 6 TRANSMISSIONS DECODED. EXIT THE COVE.</p>
-            <div className="answer-section vcr-font">
-              <button onClick={() => exitLevelToDashboard()} className="submit-btn vcr-font" style={{ width: "100%", marginTop: "1rem" }}>
-                SECURE LOGS &amp; EXIT
-              </button>
+            <div className="answer-section vcr-font" style={{ width: "100%", maxWidth: "500px", marginTop: "1rem" }}>
+              <div className="answer-header" style={{ display: "flex", justifyContent: "center", width: "100%" }}>
+                <span style={{ whiteSpace: "nowrap", fontSize: "15px" }}>ENTER THE FINAL KEY SENTENCE TO WIN</span>
+              </div>
+              <form onSubmit={handleFinalSentenceSubmit} className="answer-form" style={{ width: "100%", display: "flex", flexDirection: "column", gap: "15px" }}>
+                <input
+                  type="text"
+                  value={finalSentenceInput}
+                  onChange={(e) => setFinalSentenceInput(e.target.value)}
+                  placeholder="Type the complete 5-word sentence here..."
+                  className="answer-input vcr-font"
+                  style={{
+                    width: "100%",
+                    background: "rgba(0, 0, 0, 0.7)",
+                    border: "1px solid rgba(255, 0, 0, 0.35)",
+                    padding: "9px 10px",
+                    color: "rgba(255, 255, 255, 0.9)",
+                    fontSize: "14px",
+                    textAlign: "center",
+                    outline: "none"
+                  }}
+                />
+                <button type="submit" className="submit-btn vcr-font" style={{ width: "100%", padding: "7px 35px", border: "1px solid rgba(255, 0, 0, 0.5)", background: "rgba(21, 21, 21, 0.8)", color: "#ef4444", fontSize: "16px", cursor: "pointer" }}>
+                  DECRYPT &amp; ENTER
+                </button>
+              </form>
+              {finalSentenceFeedback && (
+                <div className={`feedback ${finalSentenceFeedback.success ? "success" : "error"}`} style={{ marginTop: "1rem", color: finalSentenceFeedback.success ? "#4ade80" : "#f87171", textTransform: "uppercase", fontSize: "0.85rem", letterSpacing: "0.15em" }}>
+                  {finalSentenceFeedback.message}
+                </div>
+              )}
             </div>
           </>
         ) : currentQuestionData ? (

@@ -26,7 +26,7 @@ interface GameContextType {
   register: (username: string, email: string, passwordString: string, otp: string) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
   submitAnswer: (answer: string, hp?: string) => Promise<{ success: boolean; message: string; isLevelComplete: boolean }>;
-  exitLevelToDashboard: () => Promise<void>;
+  exitLevelToDashboard: (sentence?: string) => Promise<{ success: boolean; message: string }>;
   resetGame: () => Promise<void>;
   loadLevelQuestion: (levelId: number) => Promise<{ levelCompletePending: boolean }>;
   currentLevelData: LevelMeta | null;
@@ -283,16 +283,25 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const exitLevelToDashboard = async () => {
+  const exitLevelToDashboard = async (sentence?: string) => {
     try {
-      const res = await fetch("/api/game/complete-level", { method: "POST", credentials: "include" });
+      const res = await fetch("/api/game/complete-level", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: sentence !== undefined ? JSON.stringify({ sentence }) : undefined
+      });
       const json = await res.json();
       if (json.user) applyUser(json.user);
+      if (!res.ok) {
+        return { success: false, message: json.message || "Decryption failed." };
+      }
     } catch {
-      // continue to dashboard regardless
+      return { success: false, message: "Connection error." };
     }
     setCurrentQuestionData(null);
     router.push("/dashboard");
+    return { success: true, message: "Decrypted." };
   };
 
   const resetGame = async () => { await logout(); };
