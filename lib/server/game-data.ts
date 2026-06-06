@@ -58,12 +58,18 @@ const creepypastaLevels: LevelData[] = [
     glowClass: "pulse-cyan-glow",
     audioHint: "[DRIPPING WET SOUNDS, BREATHING]",
     questions: [
-      { id: 1, text: "I wear a signature blue mask with empty eye sockets. What color is the thick, dark liquid that continuously drips from those hollow pits?", image:"/images/material/audience.png" , answer: "black", points: 100 },
-      { id: 2, text: "I am a nocturnal harvester. Which bean-shaped organ do I sneak into bedrooms to surgically extract from my victims?", answer: "kidney", points: 100 },
-      { id: 3, text: "With what small, razor-sharp surgical tool do I make my precise incisions?", answer: "scalpel", points: 200 },
-      { id: 4, text: "On Jack's blood-stained desk, you find binary code: '01001100 01001001 01010110 01000101 01010010'. Convert it to ASCII text.", answer: "liver", points: 100 },
-      { id: 5, text: "My iconic blue mask has no nostrils or eyes. What dark, supple material is this mask crafted from?", answer: "leather", points: 100 },
-      { id: 6, text: "Lore states that Jack was a student who served as a soldier in which historical global war before his tragic transformation?", answer: "wwi", points: 100 },
+      // Q1: ASCII sequence spells "Jack Nylas" → hunt leads through /jacknylas → kidney
+      { id: 1, text: "74 97 99 107 32 78 121 108 97 115", answer: "kidney", points: 100 },
+      // Q2: frame.xyz cipher chain → /warding spectrogram → A1Z26 → PARASITE
+      { id: 2, text: "frame.xyz\nthe static has ruined the file\nyou must restore it", answer: "parasite", points: 100 },
+      // Q3: log.png + pastebin → beginnings of every step → EDWIN dead end + MITCH dead end → brothers
+      { id: 3, text: "seek the beginnings of every step or the numbers?", image: "/images/material/log.png", answer: "brothers", points: 100 },
+      // Q4: autopsy.png — answer TBD, fill in before hunt
+      { id: 4, image: "/images/material/autopsy.png", answer: "TODO_FILL_ANSWER", points: 100 },
+      // Q5: shifted from Puppeteer Q1 — Phineas and Ferb cipher chain → perry
+      { id: 5, text: "'Everything's better in Boston'\n 65+55+82+121+78+122+69+99 finding a good way to spend it", answer: "perry", points: 100 },
+      // Q6: shifted from Ben Drowned — /apple rickroll → rick astley → never gonna give you up
+      { id: 6, text: "A for?", answer: "rickastley", points: 100 },
     ],
   },
   {
