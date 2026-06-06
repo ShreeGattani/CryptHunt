@@ -62,7 +62,7 @@ export default function CandleCovePage() {
     if (!isInitialized || !state.isLoggedIn) return;
     if (state.currentLevel !== LEVEL_ID) { router.push("/dashboard"); return; }
     loadLevelQuestion(LEVEL_ID).then(({ levelCompletePending }) => {
-      if (levelCompletePending) setLevelCompleteGate(true);
+      setLevelCompleteGate(levelCompletePending);
     });
   }, [isInitialized, state.isLoggedIn, state.currentLevel, router, loadLevelQuestion]);
 

@@ -28,7 +28,7 @@ export default function PuppeteerPage() {
     const current = Number(localStorage.getItem(BG_KEY)) || 1;
     setBgImage(`/images/puppeteer/puppet${current}.png`);
     localStorage.setItem(BG_KEY, String(current + 1 > TOTAL_IMAGES ? 1 : current + 1));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const cycleBg = useCallback(() => {
@@ -45,7 +45,7 @@ export default function PuppeteerPage() {
     if (!isInitialized || !state.isLoggedIn) return;
     if (state.currentLevel !== LEVEL_ID) { router.push("/dashboard"); return; }
     loadLevelQuestion(LEVEL_ID).then(({ levelCompletePending }) => {
-      if (levelCompletePending) setLevelCompleteGate(true);
+      setLevelCompleteGate(levelCompletePending);
     });
   }, [isInitialized, state.isLoggedIn, state.currentLevel, router, loadLevelQuestion]);
 
