@@ -11,8 +11,11 @@ export default function LockGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!state.isLoggedIn || !state.isLocked) return;
 
-    // June 6, 2026 at 12:00 PM IST (+05:30)
-    const huntStartTime = new Date("2026-06-06T12:00:00+05:30");
+    const userCreatedAt = state.createdAt ? new Date(state.createdAt) : null;
+    const lockCutoffTime = new Date("2026-06-05T00:30:00+05:30");
+    const huntStartTime = userCreatedAt && userCreatedAt >= lockCutoffTime
+      ? new Date("2026-06-06T22:00:00+05:30")
+      : new Date("2026-06-06T12:00:00+05:30");
 
     const updateTimer = () => {
       const now = new Date();
@@ -42,7 +45,7 @@ export default function LockGuard({ children }: { children: React.ReactNode }) {
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, [state.isLoggedIn, state.isLocked]);
+  }, [state.isLoggedIn, state.isLocked, state.createdAt]);
 
   if (state.isLoggedIn && state.isLocked) {
     return (
@@ -75,7 +78,11 @@ export default function LockGuard({ children }: { children: React.ReactNode }) {
               {timeLeft || "CALCULATING..."}
             </div>
             <div className="text-[10px] text-zinc-600 uppercase">
-              LAUNCH DATE: JUNE 6, 2026 @ 12:00 PM IST
+              LAUNCH DATE: JUNE 6, 2026 @ {
+                state.createdAt && new Date(state.createdAt) >= new Date("2026-06-05T00:30:00+05:30")
+                  ? "10:00 PM"
+                  : "12:00 PM"
+              } IST
             </div>
           </div>
 

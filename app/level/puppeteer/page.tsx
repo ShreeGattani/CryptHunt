@@ -84,6 +84,9 @@ export default function PuppeteerPage() {
               <h1>LEVEL SECURED</h1>
               <Image src="/images/divider.png" alt="divider" width={400} height={40} className="divider-img" />
             </div>
+            <p className="vcr-font text-red-500 font-bold tracking-[0.2em] text-2xl uppercase animate-pulse" style={{ color: "#ef4444", fontSize: "24px", letterSpacing: "0.2em", marginBottom: "1.5rem" }}>
+              [ you ]
+            </p>
             <p className="cipher-text vcr-font">THE STRINGS GO SLACK. ALL 6 PUPPETS NAMED. EXIT TO THE MATRIX.</p>
             <div className="answer-section vcr-font">
               <button onClick={() => exitLevelToDashboard()} className="submit-btn vcr-font" style={{ width: "100%", marginTop: "1rem" }}>

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAuthenticatedUser, toPublicUser, checkIsLocked } from "@/lib/server/auth";
+import { getAuthenticatedUser, toPublicUser, checkIsLocked, getLockErrorMessage } from "@/lib/server/auth";
 import { getQuestionPoints, MAX_LEVEL, QUESTIONS_PER_LEVEL } from "@/lib/server/game-data";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/server/rate-limit";
 import { requirePrismaClient } from "@/lib/server/prisma";
@@ -19,7 +19,7 @@ export async function POST(request: Request) {
 
   if (checkIsLocked(user.createdAt)) {
     return NextResponse.json(
-      { success: false, message: "HUNT HAS NOT STARTED. ACCESS DENIED UNTIL JUNE 6, 12:00 PM IST." },
+      { success: false, message: getLockErrorMessage(user.createdAt) },
       { status: 403 }
     );
   }
@@ -32,12 +32,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, message: "Level not ready to complete." }, { status: 403 });
   }
 
-  if (user.currentLevel > MAX_LEVEL) {
-    return NextResponse.json({ success: false, message: "Game already completed." }, { status: 403 });
+  const completedLevel = user.currentLevel;
+
+  if (completedLevel === 5) {
+    let body: { sentence?: string } = {};
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ success: false, message: "Invalid request body." }, { status: 400 });
+    }
+
+    const sentence = typeof body.sentence === "string" ? body.sentence : "";
+    const normalized = sentence.trim().toLowerCase().replace(/\s+/g, " ");
+    const isCorrect = [
+      "lucky or unlucky you survived",
+      "lucky or unlucky u surived",
+      "lucky or unlucky u survived",
+      "lucky or unlucky you surived"
+    ].includes(normalized);
+
+    if (!isCorrect) {
+      return NextResponse.json({ success: false, message: "ACCESS DENIED. Decryption key sentence incorrect." }, { status: 403 });
+    }
   }
 
   const prisma = requirePrismaClient();
-  const completedLevel = user.currentLevel;
   const finalPoints = getQuestionPoints(completedLevel, QUESTIONS_PER_LEVEL);
   const nextLevel = completedLevel + 1;
   const allDone = nextLevel > MAX_LEVEL;

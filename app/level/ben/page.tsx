@@ -15,7 +15,7 @@ const BG_KEY = "ben-bg";
 export default function BenPage() {
   const [bgImage, setBgImage] = useState("/images/ben/ben1.png");
   const [bgFading, setBgFading] = useState(false);
-  const [levelCompleteGate, setLevelCompleteGate] = useState(false);
+  const [levelCompleteGate, setLevelCompleteGate] = useState(true);
   const router = useRouter();
 
   const { state, submitAnswer, exitLevelToDashboard, currentQuestionData, loadLevelQuestion, isInitialized } = useGame();
@@ -28,7 +28,7 @@ export default function BenPage() {
     const current = Number(localStorage.getItem(BG_KEY)) || 1;
     setBgImage(`/images/ben/ben${current}.png`);
     localStorage.setItem(BG_KEY, String(current + 1 > TOTAL_IMAGES ? 1 : current + 1));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const cycleBg = useCallback(() => {
@@ -84,6 +84,9 @@ export default function BenPage() {
               <h1>LEVEL SECURED</h1>
               <Image src="/images/divider.png" alt="divider" width={400} height={40} className="divider-img" />
             </div>
+            <p className="vcr-font text-red-500 font-bold tracking-[0.2em] text-2xl uppercase animate-pulse" style={{ color: "#ef4444", fontSize: "24px", letterSpacing: "0.2em", marginBottom: "1.5rem" }}>
+              [ unlucky ]
+            </p>
             <p className="cipher-text vcr-font">YOU SHOULDN&apos;T HAVE DONE THAT. ALL 6 PAGES RECOVERED. EXIT NOW.</p>
             <div className="answer-section vcr-font">
               <button onClick={() => exitLevelToDashboard()} className="submit-btn vcr-font" style={{ width: "100%", marginTop: "1rem" }}>
