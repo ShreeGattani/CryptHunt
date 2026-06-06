@@ -39,7 +39,7 @@ const creepypastaLevels: LevelData[] = [
     glowClass: "pulse-cyan-glow",
     audioHint: "[STATIC WHITE NOISE INTENSIFIES]",
     questions: [
-      { id: 1, image:"/images/material/download.png", answer: "marble", points: 100 },
+      { id: 1, text: "683v8EsN", image:"/images/material/download.png", answer: "marble", points: 100 },
       { id: 2, text: "The proxies knew the truth long before the witnesses.", audio:"/images/material/entry08.wav", answer: "tuscaloosa", points: 100 },
       { id: 3, text: "It's not what is visible\n It is what it wanted\n https://youtu.be/MtN1YnoL46Q", answer: "seth", points: 100 },
       { id: 4, file:"/images/material/phonebackup.zip", answer: "believers", points: 100 },

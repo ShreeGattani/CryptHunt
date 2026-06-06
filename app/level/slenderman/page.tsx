@@ -101,7 +101,6 @@ export default function SlendermanPage() {
             <div className="title-section">
               <h1>LEVEL: SLENDER MAN</h1>
               <Image src="/images/divider.png" alt="divider" width={400} height={40} className="divider-img" />
-              <QuestionProgressBar />
             </div>
             <p key={currentQuestionData.id} className="cipher-text vcr-font question-animate">{currentQuestionData.text}</p>
             {currentQuestionData.image && (
