@@ -106,7 +106,7 @@ export default function EyelessJackPage() {
             <div className="ej-title-section">
               <h1>LEVEL: EYELESS JACK</h1>
               <Image src="/images/divider.png" alt="divider" width={400} height={40} className="divider-img" />
-              <QuestionProgressBar />
+
             </div>
             <p key={currentQuestionData.id} className="ej-cipher-text vcr-font question-animate">{currentQuestionData.text}</p>
             {currentQuestionData.image && (
@@ -120,6 +120,7 @@ export default function EyelessJackPage() {
                 />
               </div>
             )}
+
             {currentQuestionData.audio && (
               <div className="audio-section">
                 <audio controls preload="metadata">
@@ -128,6 +129,7 @@ export default function EyelessJackPage() {
                 </audio>
               </div>
             )}
+
             {currentQuestionData.file && (
               <div className="file-section">
                 <a href={currentQuestionData.file} download className="file-card">
@@ -139,6 +141,7 @@ export default function EyelessJackPage() {
                 </a>
               </div>
             )}
+            
             <div className="ej-answer-section vcr-font">
               <div className="ej-answer-header">
                 <Image src="/images/small-left.png" alt="divider" width={120} height={20} className="mini-divider-img" />

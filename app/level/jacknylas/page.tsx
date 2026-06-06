@@ -6,7 +6,7 @@ export default function JackNylasPage() {
       <div
         dangerouslySetInnerHTML={{
           __html: `
-            <!-- 66WZiv6GHt61yTL8dCuB64?pi=Y3N06fN-TPehi -->
+            <!-- 7uU1h7e61KR26IJGzD0g9v?pi=PFb5SIFpTZO1a -->
             <!-- find the decoys and take the head of the rest -->
           `,
         }}
@@ -14,7 +14,7 @@ export default function JackNylasPage() {
       <main className="creepy-page">
         <section className="creepy-card">
           <img
-            src="/images/material/medicalreport.png"
+            src="/images/material/report.png"
             alt="Medical Report"
             style={{ width: "100%", display: "block" }}
           />
