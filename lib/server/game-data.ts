@@ -66,10 +66,10 @@ const creepypastaLevels: LevelData[] = [
       { id: 3, text: "seek the beginnings of every step or the numbers?", image: "/images/material/log.png", answer: "brothers", points: 100 },
       // Q4: autopsy.png — answer TBD, fill in before hunt
       { id: 4, image: "/images/material/autopsy.png", answer: "TODO_FILL_ANSWER", points: 100 },
-      // Q5: shifted from Puppeteer Q1 — Phineas and Ferb cipher chain → perry
-      { id: 5, text: "'Everything's better in Boston'\n 65+55+82+121+78+122+69+99 finding a good way to spend it", answer: "perry", points: 100 },
-      // Q6: shifted from Ben Drowned — /apple rickroll → rick astley → never gonna give you up
-      { id: 6, text: "A for?", answer: "rickastley", points: 100 },
+      // Q5: shifted from Ben Drowned — /apple rickroll → rick astley → never gonna give you up
+      { id: 5, text: "A for?", answer: "rickastley", points: 100 },
+      // Q6: shifted from Puppeteer Q1 — Phineas and Ferb cipher chain → perry
+      { id: 6, text: "'Everything's better in Boston'\n 65+55+82+121+78+122+69+99 finding a good way to spend it", answer: "perry", points: 100 },
     ],
   },
   {
