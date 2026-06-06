@@ -104,6 +104,44 @@ export default function SlendermanPage() {
               <QuestionProgressBar />
             </div>
             <p key={currentQuestionData.id} className="cipher-text vcr-font question-animate">{currentQuestionData.text}</p>
+            {currentQuestionData.image && (
+              <div className="question-image">
+                <img
+                  src={currentQuestionData.image}
+                  alt="Question clue"
+                  width={300}
+                  height={100}
+                  className="rounded-lg"
+                />
+              </div>
+            )}
+            {currentQuestionData.audio && (
+              <div className="audio-section">
+                <audio controls preload="metadata">
+                  <source src={currentQuestionData.audio} type="audio/wav" />
+                  Your browser does not support audio playback.
+                </audio>
+              </div>
+            )}
+            {currentQuestionData.file && (
+              <div className="file-section">
+                <a
+                  href={currentQuestionData.file}
+                  download
+                  className="file-card"
+                >
+                  <div className="file-icon">📁</div>
+                  <div className="file-info">
+                    <span className="file-name">
+                      recovered_archive.zip
+                    </span>
+                    <span className="file-type">
+                      RECOVERED FILES
+                    </span>
+                  </div>
+                </a>
+              </div>
+            )}
             <div className="answer-section vcr-font">
               <div className="answer-header">
                 <Image src="/images/small-left.png" alt="divider" width={120} height={20} className="mini-divider-img" />
