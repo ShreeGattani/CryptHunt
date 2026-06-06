@@ -59,7 +59,7 @@ const creepypastaLevels: LevelData[] = [
     audioHint: "[DRIPPING WET SOUNDS, BREATHING]",
     questions: [
       { id: 1, text: "74 97 99 107 32 78 121 108 97 115", answer: "kidney", points: 100 },
-      { id: 2, text: "the static has ruined the file\nyou must restore it", file:"/images/material/frame.xyz" answer: "parasite", points: 100 },
+      { id: 2, text: "the static has ruined the file\nyou must restore it", file:"/images/material/frame.xyz", answer: "parasite", points: 100 },
       { id: 3, text: "seek the beginnings of every step or the numbers?", image: "/images/material/log.png", answer: "brothers", points: 100 },
       { id: 4, text: "Everything's better in Boston\n 65+55+82+121+78+122+69+99", answer: "perry", points: 100 },
       { id: 5, text: "A for?", answer: "rickastley", points: 100 },
