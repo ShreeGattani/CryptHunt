@@ -5,7 +5,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useGame } from "../../context/GameContext";
 import TopBar from "../../../components/topbar";
-import QuestionProgressBar from "../../../components/QuestionProgressBar";
 import "./candle.css";
 
 const LEVEL_ID = 5;
