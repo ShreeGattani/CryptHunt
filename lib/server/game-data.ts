@@ -101,7 +101,7 @@ const creepypastaLevels: LevelData[] = [
       { id: 3, text: "The doctors argued over what it was. The intern cared only about what it wanted.", image: "/images/material/maskscan.png", answer: "lushlife", points: 100 },
       { id: 4, text: "So long nerds ", answer: "tracymcconnell", points: 100 },
       { id: 5, text: "Feel like screaming?\n me too - a/BhRCYr5", answer: "interstellar", points: 100 },
-      { id: 6, text: "I may be in SNU now but heart still goes back to GUdXdcfK \n Remember who was the best mod? :P", answer: "mcflurry", points: 100 },
+      { id: 6, text: "Okay I promise this time it's obvious :P \n A for?", answer: "apple", points: 100 },
     ],
   },
   {
