@@ -1,17 +1,17 @@
 import "../backlink.css";
 
-export default function harbourPage() {
+export default function harryPage() {
   return (
     <>
       <div
         dangerouslySetInnerHTML={{
-          __html: `<!-- caribbean  -->`,
+          __html: `<!-- you have been cursed -->`,
         }}
       />
       <main className="creepy-page">
         <section className="creepy-card">
           <img
-            src="/images/material/dcode.png"
+            src="/images/material/dog.png"
             alt="decode"
             style={{ width: "100%", display: "block" }}
           />

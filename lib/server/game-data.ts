@@ -116,7 +116,7 @@ const creepypastaLevels: LevelData[] = [
     audioHint: "[DISTORTED OCEAN WAVES, STATIC REVERB]",
     questions: [
       { id: 1, text: "The Laughingstock's last transmission reached the harbour. The sailor used the old maritime code before the signal died.\n The archive coordinates are: aGFyYm91cg==", answer: "feastables", points: 100 },
-      { id: 2, text: "I am a skeleton puppet wearing a top hat who speaks in a high-pitched voice and grinds your bones. Who am I?", answer: "skintaker", points: 100 },
+      { id: 2, text: "BYf0y6JZyU4", answer: "luigi", points: 100 },
       { id: 3, text: "The main pirate ship in the show has a wooden talking face that constantly giggles. What is the ship's name?", answer: "laughingstock", points: 100 },
       { id: 4, text: "The Skin-Taker doesn't talk normal. How does his wooden skeleton jaw slide to speak?", answer: "side to side", points: 100 },
       { id: 5, text: "A mother recalls that when the show came on, her daughter sat and watched static for how many minutes?", answer: "30", points: 100 },
