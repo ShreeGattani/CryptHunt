@@ -14,7 +14,7 @@ export default function MenuPage() {
       <div
         dangerouslySetInnerHTML={{
           __html: `
-            <!-- If Jack still had an eye in 2016,
+            <!-- If Jack still had an eye in 2026,
             he would've watched her dancing in Rio.
             If he still had a life,
             it would've been a little more... -->
