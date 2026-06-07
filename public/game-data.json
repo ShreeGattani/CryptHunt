@@ -1,17 +1,17 @@
 {
-  "_note": "crypthunt-game-data-cache-v1",
+  "_note": "crypthunt-game-data-cache-v2",
   "levels": [
     {
       "id": 1,
       "name": "Slender Man",
       "theme": "forest",
       "questions": [
-        { "q": 1, "points": 100, "answer": "forest" },
-        { "q": 2, "points": 100, "answer": "pages" },
-        { "q": 3, "points": 150, "answer": "static" },
-        { "q": 4, "points": 150, "answer": "operator" },
+        { "q": 1, "points": 100, "answer": "operator" },
+        { "q": 2, "points": 100, "answer": "rosswood" },
+        { "q": 3, "points": 150, "answer": "hoody" },
+        { "q": 4, "points": 150, "answer": "jay" },
         { "q": 5, "points": 200, "answer": "proxyman" },
-        { "q": 6, "points": 200, "answer": "marble" }
+        { "q": 6, "points": 200, "answer": "rook" }
       ]
     },
     {
@@ -19,12 +19,12 @@
       "name": "Eyeless Jack",
       "theme": "hospital",
       "questions": [
-        { "q": 1, "points": 100, "answer": "kidney" },
-        { "q": 2, "points": 100, "answer": "scalpel" },
-        { "q": 3, "points": 150, "answer": "hollow" },
-        { "q": 4, "points": 150, "answer": "nocturnal" },
-        { "q": 5, "points": 200, "answer": "stitches" },
-        { "q": 6, "points": 200, "answer": "hospital" }
+        { "q": 1, "points": 100, "answer": "liver" },
+        { "q": 2, "points": 100, "answer": "fungus" },
+        { "q": 3, "points": 150, "answer": "stalker" },
+        { "q": 4, "points": 150, "answer": "clockwork" },
+        { "q": 5, "points": 200, "answer": "hollows" },
+        { "q": 6, "points": 200, "answer": "tuesday" }
       ]
     },
     {
@@ -32,12 +32,12 @@
       "name": "Ben Drowned",
       "theme": "zelda",
       "questions": [
-        { "q": 1, "points": 100, "answer": "majora" },
-        { "q": 2, "points": 100, "answer": "drowned" },
-        { "q": 3, "points": 150, "answer": "cartridge" },
-        { "q": 4, "points": 150, "answer": "clocktown" },
-        { "q": 5, "points": 200, "answer": "elegy" },
-        { "q": 6, "points": 200, "answer": "statute" }
+        { "q": 1, "points": 100, "answer": "jadusable" },
+        { "q": 2, "points": 100, "answer": "majora" },
+        { "q": 3, "points": 150, "answer": "moon" },
+        { "q": 4, "points": 150, "answer": "elegy" },
+        { "q": 5, "points": 200, "answer": "shopkeeper" },
+        { "q": 6, "points": 200, "answer": "cartridge" }
       ]
     },
     {
@@ -45,11 +45,11 @@
       "name": "The Puppeteer",
       "theme": "strings",
       "questions": [
-        { "q": 1, "points": 100, "answer": "strings" },
-        { "q": 2, "points": 100, "answer": "marionette" },
-        { "q": 3, "points": 150, "answer": "harvest" },
-        { "q": 4, "points": 150, "answer": "theatre" },
-        { "q": 5, "points": 200, "answer": "puppet" },
+        { "q": 1, "points": 100, "answer": "victor" },
+        { "q": 2, "points": 100, "answer": "strings" },
+        { "q": 3, "points": 150, "answer": "midnight" },
+        { "q": 4, "points": 150, "answer": "foxes" },
+        { "q": 5, "points": 200, "answer": "carousel" },
         { "q": 6, "points": 200, "answer": "vessel" }
       ]
     },
@@ -58,12 +58,12 @@
       "name": "Candle Cove",
       "theme": "television",
       "questions": [
-        { "q": 1, "points": 100, "answer": "broadcast" },
-        { "q": 2, "points": 100, "answer": "pirate" },
-        { "q": 3, "points": 150, "answer": "skintaker" },
-        { "q": 4, "points": 150, "answer": "laugh" },
-        { "q": 5, "points": 200, "answer": "static" },
-        { "q": 6, "points": 200, "answer": "channel" }
+        { "q": 1, "points": 100, "answer": "pirate" },
+        { "q": 2, "points": 100, "answer": "captain" },
+        { "q": 3, "points": 150, "answer": "meatgrinder" },
+        { "q": 4, "points": 150, "answer": "back and forth" },
+        { "q": 5, "points": 200, "answer": "45" },
+        { "q": 6, "points": 200, "answer": "burn it" }
       ]
     }
   ]
