@@ -99,7 +99,7 @@ const creepypastaLevels: LevelData[] = [
       { id: 1, text: "okay once more\n A for? :P", answer: "acmw", points: 100 },
       { id: 2, text: "You're in a computer game, max!\n D egkf fi apng kvhh dyyo sykcd\n AMGC2JAGFXGQ2BUNPKTJRLUXDDQSHVHEAU======\n(maybe later you might need backrooms?)", answer: "lupino", points: 100 },
       { id: 3, text: "The doctors argued over what it was. The intern cared only about what it wanted.", image: "/images/material/maskscan.png", answer: "lushlife", points: 100 },
-      { id: 4, text: ":3", answer: "chipmunks", points: 100 },
+      { id: 4, text: "So long nerds ", answer: "tracymcconnell", points: 100 },
       { id: 5, text: "Shark tank but not shark tank", answer: "shikarishambhu", points: 100 },
       { id: 6, text: "I may be in SNU now but heart still goes back to GUdXdcfK \n Remember who was the best mod? :P", answer: "mcflurry", points: 100 },
     ],
