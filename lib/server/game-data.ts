@@ -81,7 +81,7 @@ const creepypastaLevels: LevelData[] = [
       { id: 2, text: ":3", answer: "chipmunks", points: 100 },
       { id: 3, text: "Shark tank but not shark tank", answer: "shikarishambhu", points: 100 },
       { id: 4, text: "I may be in SNU now but heart still goes back to GUdXdcfK \n Remember who was the best mod? :P", answer: "mcflurry", points: 100},
-      { id: 5, text: "What is the alias of the creepy old seller who handed over the cursed cartridge to Jadusable?", answer: "oldman", points: 100 },
+      { id: 5, text: "The children remembered the episode.\n The episode remembered them.", image:"/images/material/audience.png", answer: "scrooged", points: 100 },
       { id: 6, text: "What beautiful but eerie ocarina melody, when played in reverse, triggers my presence and digital drowning?", answer: "healing", points: 100 },
     ],
   },
