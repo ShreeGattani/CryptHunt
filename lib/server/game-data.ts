@@ -115,7 +115,7 @@ const creepypastaLevels: LevelData[] = [
     glowClass: "pulse-red-glow",
     audioHint: "[DISTORTED OCEAN WAVES, STATIC REVERB]",
     questions: [
-      { id: 1, text: "The children remembered the episode. The episode remembered them.", answer: "candle cove", points: 100 },
+      { id: 1, text: "The Laughingstock's last transmission reached the harbour. The sailor used the old maritime code before the signal died.\n The archive coordinates are: aGFyYm91cg==", answer: "feastables", points: 100 },
       { id: 2, text: "I am a skeleton puppet wearing a top hat who speaks in a high-pitched voice and grinds your bones. Who am I?", answer: "skintaker", points: 100 },
       { id: 3, text: "The main pirate ship in the show has a wooden talking face that constantly giggles. What is the ship's name?", answer: "laughingstock", points: 100 },
       { id: 4, text: "The Skin-Taker doesn't talk normal. How does his wooden skeleton jaw slide to speak?", answer: "side to side", points: 100 },
