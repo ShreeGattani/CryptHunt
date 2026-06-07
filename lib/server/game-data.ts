@@ -119,8 +119,8 @@ const creepypastaLevels: LevelData[] = [
       { id: 2, text: "BYf0y6JZyU4", answer: "luigi", points: 100 },
       { id: 3, image:"/images/material/wheel.png" , answer: "tiger", points: 100 },
       { id: 4, file: "/images/material/songs.zip", answer: "goodnight", points: 100 },
-      { id: 5, text: "A mother recalls that when the show came on, her daughter sat and watched static for how many minutes?", answer: "30", points: 100 },
-      { id: 6, text: "What does the Skin-Taker whisper that he will do to the children's skin once they enter his cove?", answer: "grind it", points: 100 },
+      { id: 5, file: "/images/material/code.c", answer: "margiejoseph", points: 100 },
+      { id: 6, text: "Now that you've reached the last level and the hunt shall end\n I think it is important we answer the question\n A for?", answer: "allthewomen", points: 100 },
     ],
   },
 ];
