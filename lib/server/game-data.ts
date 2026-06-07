@@ -96,8 +96,8 @@ const creepypastaLevels: LevelData[] = [
     glowClass: "pulse-red-glow",
     audioHint: "[CREAKING WOODEN JOINTS, COLD LAUGHTER]",
     questions: [
-      { id: 1, text: "'Everything's better in Boston'\n 65+55+82+121+78+122+69+99 finding a good way to spend it", answer: "perry", points: 100 },
-      { id: 2, text: "Do you remember your password?\n Maybe I left something for you there :)", answer: "navya", points: 100 },
+      { id: 1, text: "okay one last time\n A for? :P", answer: "acmw", points: 100 },
+      { id: 2, text: "You're in a computer game, max!\n D egkf fi apng kvhh dyyo sykcd\n AMGC2JAGFXGQ2BUNPKTJRLUXDDQSHVHEAU======\n(maybe later you might need backrooms?)", answer: "lupino", points: 100 },
       { id: 3, text: "01101001 01110011 01101110 00100111 01110100 00100000 01110100 01101000 01100101 00100000 01101101 01101111 01101111 01101110 00100000 01101100 01101111 01110110 01100101 01101100 01111001 00111111", answer: "monday", points: 100 },
       { id: 4, text: ":3", answer: "chipmunks", points: 100 },
       { id: 5, text: "Shark tank but not shark tank", answer: "shikarishambhu", points: 100 },
