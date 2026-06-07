@@ -11,15 +11,11 @@ export default function LockGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!state.isLoggedIn || !state.isLocked) return;
 
-    const userCreatedAt = state.createdAt ? new Date(state.createdAt) : null;
-    const lockCutoffTime = new Date("2026-06-05T00:30:00+05:30");
-    const huntStartTime = userCreatedAt && userCreatedAt >= lockCutoffTime
-      ? new Date("2026-06-06T22:00:00+05:30")
-      : new Date("2026-06-06T12:00:00+05:30");
+    const lockEndTime = new Date("2026-06-08T01:00:00+05:30");
 
     const updateTimer = () => {
       const now = new Date();
-      const diff = huntStartTime.getTime() - now.getTime();
+      const diff = lockEndTime.getTime() - now.getTime();
 
       if (diff <= 0) {
         setTimeLeft("00:00:00:00");
@@ -45,7 +41,7 @@ export default function LockGuard({ children }: { children: React.ReactNode }) {
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, [state.isLoggedIn, state.isLocked, state.createdAt]);
+  }, [state.isLoggedIn, state.isLocked]);
 
   if (state.isLoggedIn && state.isLocked) {
     return (
@@ -62,37 +58,33 @@ export default function LockGuard({ children }: { children: React.ReactNode }) {
           
           <div className="space-y-2">
             <h2 className="text-xl font-bold tracking-widest text-red-500 uppercase font-sans animate-glitch">
-              TRANSMISSION LOCKED
+              WEBSITE UNDER CONSTRUCTION
             </h2>
             <div className="text-xs text-zinc-500 tracking-wider">
-              AGENT CONSCIOUSNESS SUCCESSFULLY REGISTERED
+              AGENT INTERFACE TEMP-LOCKED FOR UPDATES
             </div>
           </div>
 
           <div className="border-t border-b border-zinc-900 py-5 space-y-3">
             <div className="text-[10px] text-zinc-500 uppercase tracking-widest flex items-center justify-center gap-2">
               <Timer size={14} className="text-red-500/70" />
-              DECRYPTION INITIATES IN:
+              PORTAL RE-OPENS IN:
             </div>
             <div className="text-2xl font-bold font-sans text-zinc-100 tracking-widest animate-pulse">
               {timeLeft || "CALCULATING..."}
             </div>
             <div className="text-[10px] text-zinc-600 uppercase">
-              LAUNCH DATE: JUNE 6, 2026 @ {
-                state.createdAt && new Date(state.createdAt) >= new Date("2026-06-05T00:30:00+05:30")
-                  ? "10:00 PM"
-                  : "12:00 PM"
-              } IST
+              COMPLETION TARGET: JUNE 8, 2026 @ 1:00 AM IST
             </div>
           </div>
 
           <div className="p-4 border border-red-950/30 bg-red-950/10 rounded text-left text-xs space-y-2 text-red-200/80">
             <div className="font-bold flex items-center gap-1 text-red-400">
               <ShieldAlert size={14} />
-              SYSTEM PROTOCOL INFO:
+              SYSTEM MAINTENANCE INFO:
             </div>
             <p>
-              Your agent registry was created after the lock cutoff. Access to the digital labyrinth is suspended until the hunt officially begins.
+              The digital labyrinth is currently undergoing essential construction. Please relax. Access to all nodes will resume once the transmission updates are fully integrated.
             </p>
             <p className="text-[10px] text-zinc-500">
               Registered Alias: {state.username.toUpperCase()}

@@ -57,20 +57,19 @@ export async function getAuthenticatedUser(): Promise<User | null> {
 export function checkIsLocked(createdAt: Date): boolean {
   const now = new Date();
   const lockCutoffTime = new Date("2026-06-05T00:30:00+05:30");
-  const huntStartTime = createdAt >= lockCutoffTime
-    ? new Date("2026-06-06T22:00:00+05:30")
-    : new Date("2026-06-06T12:00:00+05:30");
 
-  if (now >= huntStartTime) {
+  if (createdAt < lockCutoffTime) {
     return false;
   }
-  return createdAt >= lockCutoffTime;
+
+  const lockStartTime = new Date("2026-06-07T23:00:00+05:30");
+  const lockEndTime = new Date("2026-06-08T01:00:00+05:30");
+
+  return now >= lockStartTime && now < lockEndTime;
 }
 
 export function getLockErrorMessage(createdAt: Date): string {
-  const lockCutoffTime = new Date("2026-06-05T00:30:00+05:30");
-  const timeStr = createdAt >= lockCutoffTime ? "10:00 PM" : "12:00 PM";
-  return `HUNT HAS NOT STARTED. ACCESS DENIED UNTIL JUNE 6, ${timeStr} IST.`;
+  return "WEBSITE UNDER CONSTRUCTION. PLEASE RELAX. SEE YOU AT 1:00 AM IST.";
 }
 
 /** Safe user fields to send to the client — never includes password or sessionToken. */
