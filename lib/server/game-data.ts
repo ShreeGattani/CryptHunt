@@ -118,7 +118,7 @@ const creepypastaLevels: LevelData[] = [
       { id: 1, text: "The Laughingstock's last transmission reached the harbour. The sailor used the old maritime code before the signal died.\n The archive coordinates are: aGFyYm91cg==", answer: "feastables", points: 100 },
       { id: 2, text: "BYf0y6JZyU4", answer: "luigi", points: 100 },
       { id: 3, image:"/images/material/wheel.png" , answer: "tiger", points: 100 },
-      { id: 4, text: "The Skin-Taker doesn't talk normal. How does his wooden skeleton jaw slide to speak?", answer: "side to side", points: 100 },
+      { id: 4, file: "/images/material/songs.zip", answer: "goodnight", points: 100 },
       { id: 5, text: "A mother recalls that when the show came on, her daughter sat and watched static for how many minutes?", answer: "30", points: 100 },
       { id: 6, text: "What does the Skin-Taker whisper that he will do to the children's skin once they enter his cove?", answer: "grind it", points: 100 },
     ],
