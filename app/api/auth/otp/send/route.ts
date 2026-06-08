@@ -5,6 +5,8 @@ import bcrypt from "bcryptjs";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/server/rate-limit";
 import { requirePrismaClient } from "@/lib/server/prisma";
 
+import { IS_GLOBALLY_LOCKED, getLockErrorMessage } from "@/lib/server/auth";
+
 // Constant response shape — every OTP send returns the same JSON structure
 // regardless of whether the email is registered, already maxed, or new.
 // Varying sentCount or message wording would let an attacker enumerate accounts.
@@ -15,6 +17,13 @@ const OTP_SENT_RESPONSE = {
 };
 
 export async function POST(request: Request) {
+  if (IS_GLOBALLY_LOCKED) {
+    return NextResponse.json(
+      { success: false, message: getLockErrorMessage() },
+      { status: 403 }
+    );
+  }
+
   try {
     const body = await request.json();
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";

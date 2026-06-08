@@ -4,12 +4,19 @@ import React, { useEffect, useState } from "react";
 import { useGame } from "../app/context/GameContext";
 import { Lock, LogOut, ShieldAlert, Timer } from "lucide-react";
 
-export default function LockGuard({ children }: { children: React.ReactNode }) {
+interface LockGuardProps {
+  children: React.ReactNode;
+  isGloballyLocked?: boolean;
+}
+
+export default function LockGuard({ children, isGloballyLocked = false }: LockGuardProps) {
   const { state, logout } = useGame();
   const [timeLeft, setTimeLeft] = useState<string>("");
 
+  const isLocked = isGloballyLocked || (state.isLoggedIn && state.isLocked);
+
   useEffect(() => {
-    if (!state.isLoggedIn || !state.isLocked) return;
+    if (isGloballyLocked || !state.isLoggedIn || !state.isLocked) return;
 
     const lockEndTime = new Date("2026-06-08T01:00:00+05:30");
 
@@ -41,9 +48,9 @@ export default function LockGuard({ children }: { children: React.ReactNode }) {
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, [state.isLoggedIn, state.isLocked]);
+  }, [state.isLoggedIn, state.isLocked, isGloballyLocked]);
 
-  if (state.isLoggedIn && state.isLocked) {
+  if (isLocked) {
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-zinc-950 p-4 relative overflow-hidden font-mono text-zinc-100">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(120,0,0,0.12),transparent_70%)] pointer-events-none" />
@@ -58,46 +65,67 @@ export default function LockGuard({ children }: { children: React.ReactNode }) {
           
           <div className="space-y-2">
             <h2 className="text-xl font-bold tracking-widest text-red-500 uppercase font-sans animate-glitch">
-              WEBSITE UNDER CONSTRUCTION
+              {isGloballyLocked ? "THE HUNT IS OVER" : "WEBSITE UNDER CONSTRUCTION"}
             </h2>
             <div className="text-xs text-zinc-500 tracking-wider">
-              AGENT INTERFACE TEMP-LOCKED FOR UPDATES
+              {isGloballyLocked ? "ALL PORTAL PATHWAYS DEACTIVATED" : "AGENT INTERFACE TEMP-LOCKED FOR UPDATES"}
             </div>
           </div>
 
-          <div className="border-t border-b border-zinc-900 py-5 space-y-3">
-            <div className="text-[10px] text-zinc-500 uppercase tracking-widest flex items-center justify-center gap-2">
-              <Timer size={14} className="text-red-500/70" />
-              PORTAL RE-OPENS IN:
+          {isGloballyLocked ? (
+            <div className="border-t border-b border-zinc-900 py-5 space-y-3">
+              <div className="text-[10px] text-zinc-500 uppercase tracking-widest flex items-center justify-center gap-2">
+                <ShieldAlert size={14} className="text-red-500/70" />
+                ACCESS LEVEL: RESTRICTED
+              </div>
+              <div className="text-2xl font-bold font-sans text-zinc-100 tracking-widest animate-pulse">
+                ALL NODES OFFLINE
+              </div>
+              <div className="text-[10px] text-zinc-600 uppercase">
+                ADMINISTRATIVE LOCKOUT ACTIVE
+              </div>
             </div>
-            <div className="text-2xl font-bold font-sans text-zinc-100 tracking-widest animate-pulse">
-              {timeLeft || "CALCULATING..."}
+          ) : (
+            <div className="border-t border-b border-zinc-900 py-5 space-y-3">
+              <div className="text-[10px] text-zinc-500 uppercase tracking-widest flex items-center justify-center gap-2">
+                <Timer size={14} className="text-red-500/70" />
+                PORTAL RE-OPENS IN:
+              </div>
+              <div className="text-2xl font-bold font-sans text-zinc-100 tracking-widest animate-pulse">
+                {timeLeft || "CALCULATING..."}
+              </div>
+              <div className="text-[10px] text-zinc-600 uppercase">
+                COMPLETION TARGET: JUNE 8, 2026 @ 1:00 AM IST
+              </div>
             </div>
-            <div className="text-[10px] text-zinc-600 uppercase">
-              COMPLETION TARGET: JUNE 8, 2026 @ 1:00 AM IST
-            </div>
-          </div>
+          )}
 
           <div className="p-4 border border-red-950/30 bg-red-950/10 rounded text-left text-xs space-y-2 text-red-200/80">
             <div className="font-bold flex items-center gap-1 text-red-400">
               <ShieldAlert size={14} />
-              SYSTEM MAINTENANCE INFO:
+              {isGloballyLocked ? "SYSTEM TRANSMISSION ENDED:" : "SYSTEM MAINTENANCE INFO:"}
             </div>
             <p>
-              The digital labyrinth is currently undergoing essential construction. Please relax. Access to all nodes will resume once the transmission updates are fully integrated.
+              {isGloballyLocked 
+                ? "The cryptographic digital treasure hunt has concluded. All anomalies have been neutralized. The terminal remains offline."
+                : "The digital labyrinth is currently undergoing essential construction. Please relax. Access to all nodes will resume once the transmission updates are fully integrated."}
             </p>
-            <p className="text-[10px] text-zinc-500">
-              Registered Alias: {state.username.toUpperCase()}
-            </p>
+            {state.username && (
+              <p className="text-[10px] text-zinc-500">
+                Registered Alias: {state.username.toUpperCase()}
+              </p>
+            )}
           </div>
 
-          <button
-            onClick={logout}
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-zinc-800 hover:border-red-900/50 hover:bg-red-950/20 hover:text-red-400 text-zinc-400 rounded transition-all duration-300 text-xs tracking-widest uppercase font-bold cursor-pointer"
-          >
-            <LogOut size={14} />
-            LOGOUT / REGISTER TEST USER
-          </button>
+          {state.isLoggedIn && (
+            <button
+              onClick={logout}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-zinc-800 hover:border-red-900/50 hover:bg-red-950/20 hover:text-red-400 text-zinc-400 rounded transition-all duration-300 text-xs tracking-widest uppercase font-bold cursor-pointer"
+            >
+              <LogOut size={14} />
+              LOGOUT / REGISTER TEST USER
+            </button>
+          )}
         </div>
       </div>
     );

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { attachSessionCookie, createSessionToken, hashSessionToken, toPublicUser } from "@/lib/server/auth";
+import { attachSessionCookie, createSessionToken, hashSessionToken, toPublicUser, IS_GLOBALLY_LOCKED, getLockErrorMessage } from "@/lib/server/auth";
 import { parseJsonBody } from "@/lib/server/parse-json-body";
 import { hashPassword, isLegacyPlaintext, verifyPassword } from "@/lib/server/password";
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/server/rate-limit";
@@ -8,6 +8,13 @@ import { ensureMinElapsed } from "@/lib/server/timing-pad";
 
 export async function POST(request: Request) {
   const startedAt = Date.now();
+
+  if (IS_GLOBALLY_LOCKED) {
+    return NextResponse.json(
+      { success: false, message: getLockErrorMessage() },
+      { status: 403 }
+    );
+  }
 
   try {
     const parsed = await parseJsonBody(request);

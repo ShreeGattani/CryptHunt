@@ -54,11 +54,17 @@ export async function getAuthenticatedUser(): Promise<User | null> {
   return prisma.user.findFirst({ where: { sessionToken: hashSessionToken(raw) } });
 }
 
-export function checkIsLocked(createdAt: Date): boolean {
+export const IS_GLOBALLY_LOCKED = true;
+
+export function checkIsLocked(createdAt?: Date): boolean {
+  if (IS_GLOBALLY_LOCKED) {
+    return true;
+  }
+
   const now = new Date();
   const lockCutoffTime = new Date("2026-06-05T00:30:00+05:30");
 
-  if (createdAt < lockCutoffTime) {
+  if (createdAt && createdAt < lockCutoffTime) {
     return false;
   }
 
@@ -68,8 +74,8 @@ export function checkIsLocked(createdAt: Date): boolean {
   return now >= lockStartTime && now < lockEndTime;
 }
 
-export function getLockErrorMessage(createdAt: Date): string {
-  return "WEBSITE UNDER CONSTRUCTION. PLEASE RELAX. SEE YOU AT 1:00 AM IST.";
+export function getLockErrorMessage(createdAt?: Date): string {
+  return "THE HUNT IS OVER. ALL TRANSMISSIONS COMPLETED.";
 }
 
 /** Safe user fields to send to the client — never includes password or sessionToken. */

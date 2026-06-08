@@ -3,6 +3,7 @@ import Script from "next/script";
 import { GameProvider } from "./context/GameContext";
 import LockGuard from "../components/LockGuard";
 import { AudioProvider } from "../components/AudioManager";
+import { IS_GLOBALLY_LOCKED } from "@/lib/server/auth";
 import "./globals.css";
 import "../components/topbar.css";
 import "../components/QuestionProgressBar.css";
@@ -38,7 +39,7 @@ export default function RootLayout({
         <div className="vhs-line"></div>
         <AudioProvider>
           <GameProvider>
-            <LockGuard>
+            <LockGuard isGloballyLocked={IS_GLOBALLY_LOCKED}>
               {children}
             </LockGuard>
           </GameProvider>
