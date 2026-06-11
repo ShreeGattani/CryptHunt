@@ -7,7 +7,7 @@ export default async function SlendermanLayout({
   children: React.ReactNode;
 }) {
   const user = await getAuthenticatedUser();
-  
+
   if (!user) {
     redirect("/");
   }
@@ -22,3 +22,5 @@ export default async function SlendermanLayout({
 
   return <>{children}</>;
 }
+//shree
+//hello

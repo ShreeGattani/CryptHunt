@@ -54,7 +54,7 @@ export async function getAuthenticatedUser(): Promise<User | null> {
   return prisma.user.findFirst({ where: { sessionToken: hashSessionToken(raw) } });
 }
 
-export const IS_GLOBALLY_LOCKED = true;
+export const IS_GLOBALLY_LOCKED = false;
 
 export function checkIsLocked(createdAt?: Date): boolean {
   if (IS_GLOBALLY_LOCKED) {
